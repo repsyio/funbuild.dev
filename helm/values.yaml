@@ -1,0 +1,55 @@
+replicaCount: 1
+
+# Backend image. tag is shared with frontend.image: both are built from the same commit.
+image:
+  repository: repo.repsy.io/firat/apps/funbuild
+  # Updated by .github/workflows/deploy.yml on every push to main
+  tag: initial
+  pullPolicy: IfNotPresent
+
+# docker-registry secret created by hand in the namespace (see README)
+imagePullSecrets:
+  - name: repsy-registry
+
+service:
+  port: 80
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    external-dns.kubernetes.io/target: apps.firat.io
+  hosts:
+    - host: api.funbuild.dev
+      paths:
+        - path: /
+          pathType: Prefix
+
+# Static Angular build, published to Cloudflare Pages through a CloudflarePage resource
+frontend:
+  enabled: true
+  image:
+    repository: repo.repsy.io/firat/apps/funbuild-frontend
+  directory: /site
+  domain: funbuild.dev
+  # Immutable once the project exists
+  projectName: funbuild
+
+# Hand-created Secret (see README) holding jwt-secret, github-client-id/secret, google-client-id/secret
+auth:
+  secretName: funbuild-auth
+
+database:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:18
+  storageClass: local-path-retain
+  storageSize: 1Gi
+  name: funbuild
+  owner: funbuild
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 384Mi
+  limits:
+    memory: 768Mi

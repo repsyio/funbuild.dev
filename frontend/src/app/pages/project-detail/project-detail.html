@@ -1,0 +1,48 @@
+@if (loading()) {
+  <div class="flex justify-center py-12">
+    <span class="loading loading-spinner loading-lg"></span>
+  </div>
+} @else if (project(); as p) {
+  @if (editing()) {
+    <app-project-form [existingProject]="p" (saved)="onSaved()" (cancelled)="editing.set(false)" />
+  } @else {
+    <div class="card bg-base-100 shadow">
+      <div class="card-body gap-3">
+        <a [routerLink]="['/assignments', p.assignmentId]" class="badge badge-outline w-fit">{{ p.assignmentTitle }}</a>
+
+        <div class="flex items-start justify-between gap-2">
+          <h1 class="card-title text-2xl">{{ p.title }}</h1>
+          <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" (voted)="onVoted($event)" />
+        </div>
+
+        <p class="whitespace-pre-line opacity-90">{{ p.description }}</p>
+
+        @if (p.techLabels.length) {
+          <div class="flex flex-wrap gap-1">
+            @for (label of p.techLabels; track label.id) {
+              <span class="badge badge-sm">{{ label.name }}</span>
+            }
+          </div>
+        }
+
+        <div class="flex flex-wrap gap-3 text-sm">
+          <a [href]="p.showcaseUrl" target="_blank" rel="noopener" class="link link-primary">Showcase ↗</a>
+          @if (p.gitRepoUrl) {
+            <a [href]="p.gitRepoUrl" target="_blank" rel="noopener" class="link">Git repo ↗</a>
+          }
+        </div>
+
+        <div class="text-sm opacity-60">
+          by {{ p.submitter.displayName }} · submitted {{ p.createdAt | date: 'medium' }}
+        </div>
+
+        @if (canManage()) {
+          <div class="card-actions justify-end">
+            <button class="btn btn-ghost btn-sm" (click)="editing.set(true)">Edit</button>
+            <button class="btn btn-error btn-sm btn-outline" (click)="delete()">Delete</button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}

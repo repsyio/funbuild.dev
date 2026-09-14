@@ -1,0 +1,39 @@
+<div class="mx-auto max-w-sm">
+  <form class="card bg-base-100 shadow" (ngSubmit)="submit()" #form="ngForm">
+    <div class="card-body gap-4">
+      <h1 class="card-title">Log in</h1>
+
+      @if (error()) {
+        <div role="alert" class="alert alert-error">
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <label class="form-control">
+        <span class="label-text mb-1">Email</span>
+        <input type="email" class="input input-bordered" name="email" [(ngModel)]="email" required />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text mb-1">Password</span>
+        <input type="password" class="input input-bordered" name="password" [(ngModel)]="password" required />
+      </label>
+
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
+        @if (loading()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        }
+        Log in
+      </button>
+
+      <div class="divider text-xs">or</div>
+
+      <a [href]="oauthUrl('github')" class="btn btn-outline">Continue with GitHub</a>
+      <a [href]="oauthUrl('google')" class="btn btn-outline">Continue with Google</a>
+
+      <p class="text-center text-sm opacity-70">
+        No account yet? <a routerLink="/register" class="link link-primary">Sign up</a>
+      </p>
+    </div>
+  </form>
+</div>

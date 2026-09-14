@@ -1,0 +1,13 @@
+<a [routerLink]="['/assignments', assignment().id]" class="card bg-base-100 shadow transition hover:shadow-md">
+  <div class="card-body">
+    <div class="flex items-start justify-between gap-2">
+      <h3 class="card-title">{{ assignment().title }}</h3>
+      <span class="badge" [class]="statusBadgeClass[assignment().status]">{{ assignment().status }}</span>
+    </div>
+    <p class="line-clamp-3 text-sm opacity-80">{{ assignment().description }}</p>
+    <div class="card-actions justify-between text-xs opacity-60">
+      <span>by {{ assignment().createdBy.displayName }}</span>
+      <span>ends {{ assignment().endAt | date: 'mediumDate' }}</span>
+    </div>
+  </div>
+</a>

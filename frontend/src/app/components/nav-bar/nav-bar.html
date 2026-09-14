@@ -1,0 +1,24 @@
+<div class="navbar bg-base-100 shadow-sm px-4">
+  <div class="flex-1">
+    <a routerLink="/" class="text-xl font-bold">FunBuild</a>
+  </div>
+  <div class="flex items-center gap-2">
+    @if (auth.isAdmin()) {
+      <div class="dropdown dropdown-end">
+        <div tabindex="0" role="button" class="btn btn-ghost btn-sm">Admin</div>
+        <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-48 p-2 shadow">
+          <li><a routerLink="/admin/assignments">Assignments</a></li>
+          <li><a routerLink="/admin/projects">Projects</a></li>
+          <li><a routerLink="/admin/users">Users</a></li>
+        </ul>
+      </div>
+    }
+    @if (auth.isAuthenticated()) {
+      <span class="hidden text-sm opacity-70 sm:inline">{{ auth.currentUser()?.displayName }}</span>
+      <button class="btn btn-ghost btn-sm" (click)="logout()">Log out</button>
+    } @else {
+      <a routerLink="/login" class="btn btn-ghost btn-sm">Log in</a>
+      <a routerLink="/register" class="btn btn-primary btn-sm">Sign up</a>
+    }
+  </div>
+</div>

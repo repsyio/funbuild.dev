@@ -1,0 +1,15 @@
+{{- if .Values.frontend.enabled }}
+# Published to Cloudflare Pages by the cfpo operator (apps-firat-apps/apps/cfpo.yaml).
+# The operator creates the Pages project, the custom domain and its CNAME record.
+apiVersion: pages.repsy.io/v1alpha1
+kind: CloudflarePage
+metadata:
+  name: {{ include "app.fullname" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+spec:
+  image: "{{ .Values.frontend.image.repository }}:{{ .Values.image.tag }}"
+  directory: {{ .Values.frontend.directory | quote }}
+  domain: {{ .Values.frontend.domain | quote }}
+  projectName: {{ .Values.frontend.projectName | quote }}
+{{- end }}

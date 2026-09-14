@@ -1,0 +1,58 @@
+<form class="card bg-base-100 shadow" (ngSubmit)="submit()" #form="ngForm">
+  <div class="card-body gap-4">
+    <h3 class="card-title">{{ existingProject() ? 'Edit submission' : 'Submit a project' }}</h3>
+
+    @if (error()) {
+      <div role="alert" class="alert alert-error">
+        <span>{{ error() }}</span>
+      </div>
+    }
+
+    <label class="form-control">
+      <span class="label-text mb-1">Title</span>
+      <input type="text" class="input input-bordered" name="title" [(ngModel)]="title" required maxlength="200" />
+    </label>
+
+    <label class="form-control">
+      <span class="label-text mb-1">Description</span>
+      <textarea class="textarea textarea-bordered" name="description" rows="4" [(ngModel)]="description" required></textarea>
+    </label>
+
+    <label class="form-control">
+      <span class="label-text mb-1">Showcase URL</span>
+      <input
+        type="url"
+        class="input input-bordered"
+        name="showcaseUrl"
+        placeholder="https://…"
+        [(ngModel)]="showcaseUrl"
+        required
+      />
+    </label>
+
+    <label class="form-control">
+      <span class="label-text mb-1">Git repo URL <span class="opacity-60">(optional)</span></span>
+      <input
+        type="url"
+        class="input input-bordered"
+        name="gitRepoUrl"
+        placeholder="https://github.com/…"
+        [(ngModel)]="gitRepoUrl"
+      />
+    </label>
+
+    <app-tech-label-select [(labels)]="techLabels" />
+
+    <div class="card-actions justify-end">
+      @if (existingProject()) {
+        <button type="button" class="btn btn-ghost" (click)="cancelled.emit()">Cancel</button>
+      }
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        }
+        {{ existingProject() ? 'Save changes' : 'Submit project' }}
+      </button>
+    </div>
+  </div>
+</form>

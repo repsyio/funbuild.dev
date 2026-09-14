@@ -1,0 +1,13 @@
+# Backend
+backend/target/
+backend/src/main/resources/static/
+
+# Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store

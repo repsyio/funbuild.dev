@@ -1,0 +1,35 @@
+<section class="mb-10">
+  <div class="mb-4 flex items-center justify-between">
+    <h1 class="text-2xl font-semibold">Active assignments</h1>
+  </div>
+  @if (activeAssignments().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (assignment of activeAssignments(); track assignment.id) {
+        <app-assignment-card [assignment]="assignment" />
+      }
+    </div>
+  } @else {
+    <div role="alert" class="alert">
+      <span>No assignments are open right now — check back soon.</span>
+    </div>
+  }
+</section>
+
+<section>
+  <h2 class="mb-4 text-2xl font-semibold">Most voted projects</h2>
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+  } @else if (topProjects().length) {
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      @for (project of topProjects(); track project.id) {
+        <app-project-card [project]="project" [showAssignment]="true" (voted)="onVoted(project, $event)" />
+      }
+    </div>
+  } @else {
+    <div role="alert" class="alert">
+      <span>No submissions yet — be the first to submit a project!</span>
+    </div>
+  }
+</section>

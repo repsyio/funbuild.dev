@@ -1,0 +1,6 @@
+apiVersion: v2
+name: funbuild
+description: Spring Boot API with a CloudNativePG database and an Angular frontend on Cloudflare Pages
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

@@ -1,0 +1,89 @@
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-semibold">Assignments</h1>
+  @if (editingId() === null) {
+    <button class="btn btn-primary btn-sm" (click)="startCreate()">New assignment</button>
+  }
+</div>
+
+@if (editingId() !== null) {
+  <form class="card mb-8 bg-base-100 shadow" (ngSubmit)="save()" #f="ngForm">
+    <div class="card-body gap-4">
+      <h2 class="card-title">{{ editingId() === 'new' ? 'New assignment' : 'Edit assignment' }}</h2>
+
+      @if (error()) {
+        <div role="alert" class="alert alert-error">
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <label class="form-control">
+        <span class="label-text mb-1">Title</span>
+        <input type="text" class="input input-bordered" name="title" [(ngModel)]="form.title" required maxlength="200" />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text mb-1">Description</span>
+        <textarea class="textarea textarea-bordered" name="description" rows="4" [(ngModel)]="form.description" required></textarea>
+      </label>
+
+      <div class="grid gap-4 sm:grid-cols-2">
+        <label class="form-control">
+          <span class="label-text mb-1">Starts</span>
+          <input type="datetime-local" class="input input-bordered" name="startAt" [(ngModel)]="form.startAt" required />
+        </label>
+        <label class="form-control">
+          <span class="label-text mb-1">Ends</span>
+          <input type="datetime-local" class="input input-bordered" name="endAt" [(ngModel)]="form.endAt" required />
+        </label>
+      </div>
+
+      <div class="card-actions justify-end">
+        <button type="button" class="btn btn-ghost" (click)="cancel()">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Save</button>
+      </div>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <div class="flex justify-center py-12">
+    <span class="loading loading-spinner loading-lg"></span>
+  </div>
+} @else {
+  <div class="overflow-x-auto">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Starts</th>
+          <th>Ends</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (a of assignments(); track a.id) {
+          <tr>
+            <td>{{ a.title }}</td>
+            <td>
+              <span
+                class="badge"
+                [class.badge-success]="a.status === 'ACTIVE'"
+                [class.badge-info]="a.status === 'UPCOMING'"
+                [class.badge-ghost]="a.status === 'EXPIRED'"
+              >
+                {{ a.status }}
+              </span>
+            </td>
+            <td>{{ a.startAt | date: 'medium' }}</td>
+            <td>{{ a.endAt | date: 'medium' }}</td>
+            <td class="flex gap-2">
+              <button class="btn btn-ghost btn-sm" (click)="startEdit(a)">Edit</button>
+              <button class="btn btn-error btn-outline btn-sm" (click)="delete(a)">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

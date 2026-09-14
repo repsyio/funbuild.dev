@@ -1,0 +1,19 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "app.dbCluster" . }}
+  labels:
+    {{- include "app.labels" . | nindent 4 }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  instances: {{ .Values.database.instances }}
+  imageName: {{ .Values.database.imageName }}
+  storage:
+    # local-path-retain keeps the data directory if the Cluster is pruned
+    storageClass: {{ .Values.database.storageClass }}
+    size: {{ .Values.database.storageSize }}
+  bootstrap:
+    initdb:
+      database: {{ .Values.database.name }}
+      owner: {{ .Values.database.owner }}

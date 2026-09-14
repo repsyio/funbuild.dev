@@ -1,0 +1,52 @@
+spring:
+  application:
+    name: funbuild
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/funbuild}
+    username: ${SPRING_DATASOURCE_USERNAME:funbuild}
+    password: ${SPRING_DATASOURCE_PASSWORD:funbuild}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  security:
+    oauth2:
+      client:
+        registration:
+          # Spring Boot rejects a blank client-id, so this falls back to a non-empty placeholder
+          # rather than failing startup when the funbuild-auth secret hasn't been configured yet;
+          # actual sign-in just fails upstream at GitHub/Google until real values are set.
+          github:
+            client-id: ${GITHUB_CLIENT_ID:unconfigured}
+            client-secret: ${GITHUB_CLIENT_SECRET:unconfigured}
+            scope: read:user,user:emails
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:unconfigured}
+            client-secret: ${GOOGLE_CLIENT_SECRET:unconfigured}
+            scope: openid,profile,email
+
+app:
+  cors:
+    # Comma-separated; the Helm chart sets the Cloudflare Pages origin
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:4200}
+  # Where OAuth2 login redirects back to with the issued JWT in the URL fragment
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:4200}
+  jwt:
+    # HS256 needs >= 256 bits; this default is for local dev only
+    secret: ${APP_JWT_SECRET:dev-only-insecure-secret-change-me-please-0123456789}
+    expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:10080}
+
+server:
+  # Traefik reaches the pod over plain HTTP; trust X-Forwarded-* instead of redirecting
+  forward-headers-strategy: framework
+  shutdown: graceful
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info

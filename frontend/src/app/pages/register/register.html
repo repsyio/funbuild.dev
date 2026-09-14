@@ -1,0 +1,44 @@
+<div class="mx-auto max-w-sm">
+  <form class="card bg-base-100 shadow" (ngSubmit)="submit()" #form="ngForm">
+    <div class="card-body gap-4">
+      <h1 class="card-title">Create an account</h1>
+
+      @if (error()) {
+        <div role="alert" class="alert alert-error">
+          <span>{{ error() }}</span>
+        </div>
+      }
+
+      <label class="form-control">
+        <span class="label-text mb-1">Name</span>
+        <input type="text" class="input input-bordered" name="displayName" [(ngModel)]="displayName" required maxlength="120" />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text mb-1">Email</span>
+        <input type="email" class="input input-bordered" name="email" [(ngModel)]="email" required />
+      </label>
+
+      <label class="form-control">
+        <span class="label-text mb-1">Password</span>
+        <input type="password" class="input input-bordered" name="password" [(ngModel)]="password" required minlength="8" />
+      </label>
+
+      <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
+        @if (loading()) {
+          <span class="loading loading-spinner loading-sm"></span>
+        }
+        Sign up
+      </button>
+
+      <div class="divider text-xs">or</div>
+
+      <a [href]="oauthUrl('github')" class="btn btn-outline">Continue with GitHub</a>
+      <a [href]="oauthUrl('google')" class="btn btn-outline">Continue with Google</a>
+
+      <p class="text-center text-sm opacity-70">
+        Already have an account? <a routerLink="/login" class="link link-primary">Log in</a>
+      </p>
+    </div>
+  </form>
+</div>

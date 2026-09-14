@@ -1,0 +1,10 @@
+<button
+  type="button"
+  class="btn btn-sm"
+  [class.btn-primary]="votedByMe()"
+  [class.btn-outline]="!votedByMe()"
+  [disabled]="loading()"
+  (click)="toggle()"
+>
+  ▲ {{ voteCount() }}
+</button>
