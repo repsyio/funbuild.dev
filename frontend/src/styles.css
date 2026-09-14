@@ -102,6 +102,7 @@ a { color: var(--color-accent); text-underline-offset: 3px; }
   font-size: 14px; line-height: 1.2; color: var(--color-text);
   background: transparent; border: 1px solid transparent;
   padding: var(--space-2) calc(var(--space-3) * 1.2);
+  min-height: 36px; box-sizing: border-box;
   border-radius: var(--radius-md);
 }
 .btn svg { display: block; }
@@ -116,7 +117,7 @@ a { color: var(--color-accent); text-underline-offset: 3px; }
 .btn-ghost:hover:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 10%, transparent); }
 .btn-ghost:active:not(:disabled) { background: color-mix(in srgb, var(--color-accent) 18%, transparent); }
 .btn-block { width: 100%; }
-.btn-sm { padding: 4px 9px; font-size: 12.5px; }
+.btn-sm { padding: 4px 9px; font-size: 12.5px; min-height: 0; }
 
 /* — forms — */
 .field > label {
@@ -133,6 +134,20 @@ a { color: var(--color-accent); text-underline-offset: 3px; }
 .input:hover { border-color: color-mix(in srgb, var(--color-text) 45%, transparent); }
 .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
 textarea.input { min-height: 90px; resize: vertical; }
+
+/* — auth cards — */
+/* Login and signup share the same layout, so each gets its own tint to stay
+   visually distinct: login uses the violet accent, signup the section blue. */
+.auth-card--login {
+  background: color-mix(in srgb, var(--color-accent-900) 55%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-accent) 35%, var(--color-divider));
+  box-shadow: var(--shadow-md);
+}
+.auth-card--register {
+  background: color-mix(in srgb, var(--color-section) 55%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-section-glow) 65%, var(--color-divider));
+  box-shadow: var(--shadow-md);
+}
 
 /* — cards — */
 .card {
