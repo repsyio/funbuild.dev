@@ -13,7 +13,7 @@ export class VoteButton {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  readonly projectId = input.required<number>();
+  readonly projectId = input.required<string>();
   readonly voteCount = input.required<number>();
   readonly votedByMe = input.required<boolean>();
   /** 'lg' is used on the project detail page's title row; 'sm' everywhere else. */

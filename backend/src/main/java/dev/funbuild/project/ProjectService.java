@@ -14,6 +14,7 @@ import dev.funbuild.vote.VoteRepository;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public List<ProjectResponse> list(Long assignmentId, AuthenticatedUser viewer) {
+  public List<ProjectResponse> list(UUID assignmentId, AuthenticatedUser viewer) {
     List<Project> projects =
         assignmentId != null
             ? repository.findAllByAssignmentIdOrderByVoteCountDescCreatedAtDesc(assignmentId)
@@ -62,7 +63,7 @@ public class ProjectService {
   }
 
   @Transactional(readOnly = true)
-  public ProjectResponse get(Long id, AuthenticatedUser viewer) {
+  public ProjectResponse get(UUID id, AuthenticatedUser viewer) {
     Project project = find(id);
     return ProjectResponse.from(project, votedByMe(project, viewer));
   }
@@ -85,7 +86,7 @@ public class ProjectService {
   }
 
   @Transactional
-  public ProjectResponse update(Long id, ProjectRequest req, AuthenticatedUser currentUser) {
+  public ProjectResponse update(UUID id, ProjectRequest req, AuthenticatedUser currentUser) {
     Project project = find(id);
     requireOwnerOrAdmin(project, currentUser);
     if (project.getAssignment().status() != AssignmentStatus.ACTIVE) {
@@ -98,13 +99,13 @@ public class ProjectService {
   }
 
   @Transactional
-  public void delete(Long id, AuthenticatedUser currentUser) {
+  public void delete(UUID id, AuthenticatedUser currentUser) {
     Project project = find(id);
     requireOwnerOrAdmin(project, currentUser);
     repository.delete(project);
   }
 
-  private Project find(Long id) {
+  private Project find(UUID id) {
     return repository.findById(id).orElseThrow(() -> new NotFoundException("Project not found"));
   }
 
@@ -126,7 +127,7 @@ public class ProjectService {
     if (projects.isEmpty()) {
       return List.of();
     }
-    Set<Long> votedIds =
+    Set<UUID> votedIds =
         viewer == null
             ? Collections.emptySet()
             : voteRepository.findVotedProjectIds(viewer.id(), projects.stream().map(Project::getId).toList());

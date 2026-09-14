@@ -1,7 +1,9 @@
 package dev.funbuild.user;
 
+import java.util.UUID;
+
 public record UserSummary(
-    Long id, String email, String displayName, String avatarUrl, Role role, AuthProvider authProvider) {
+    UUID id, String email, String displayName, String avatarUrl, Role role, AuthProvider authProvider) {
 
   public static UserSummary from(User user) {
     return new UserSummary(

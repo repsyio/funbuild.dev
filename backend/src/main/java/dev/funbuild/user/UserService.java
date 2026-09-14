@@ -5,6 +5,7 @@ import dev.funbuild.error.NotFoundException;
 import dev.funbuild.error.UnauthorizedException;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,7 @@ public class UserService {
     return repository.findAllByOrderByCreatedAtDesc();
   }
 
-  public User get(Long id) {
+  public User get(UUID id) {
     return repository.findById(id).orElseThrow(() -> new NotFoundException("User not found"));
   }
 
@@ -96,21 +97,21 @@ public class UserService {
   }
 
   @Transactional
-  public User updateRole(Long id, Role role) {
+  public User updateRole(UUID id, Role role) {
     User user = get(id);
     user.setRole(role);
     return user;
   }
 
   @Transactional
-  public User updateDisplayName(Long id, String displayName) {
+  public User updateDisplayName(UUID id, String displayName) {
     User user = get(id);
     user.setDisplayName(displayName);
     return user;
   }
 
   @Transactional
-  public void delete(Long id) {
+  public void delete(UUID id) {
     if (!repository.existsById(id)) {
       throw new NotFoundException("User not found");
     }

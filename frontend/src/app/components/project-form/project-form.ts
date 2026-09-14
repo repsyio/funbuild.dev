@@ -13,7 +13,7 @@ export class ProjectForm implements OnInit {
   private readonly projectService = inject(ProjectService);
 
   /** Required when creating a new submission; ignored when editing (the assignment is fixed). */
-  readonly assignmentId = input<number>();
+  readonly assignmentId = input<string>();
   readonly existingProject = input<Project | null>(null);
   readonly saved = output<Project>();
   readonly cancelled = output<void>();

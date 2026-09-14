@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -32,10 +33,10 @@ public class JwtService {
     return generateToken(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole());
   }
 
-  public String generateToken(Long userId, String email, String displayName, Role role) {
+  public String generateToken(UUID userId, String email, String displayName, Role role) {
     Instant now = Instant.now();
     return Jwts.builder()
-        .subject(String.valueOf(userId))
+        .subject(userId.toString())
         .claim("email", email)
         .claim("name", displayName)
         .claim("role", role.name())
@@ -49,7 +50,7 @@ public class JwtService {
   public Optional<AuthenticatedUser> parse(String token) {
     try {
       Claims claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
-      Long id = Long.valueOf(claims.getSubject());
+      UUID id = UUID.fromString(claims.getSubject());
       String email = claims.get("email", String.class);
       String name = claims.get("name", String.class);
       Role role = Role.valueOf(claims.get("role", String.class));

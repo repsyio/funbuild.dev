@@ -13,19 +13,19 @@ export class AssignmentService {
     return this.http.get<Assignment[]>(this.base, status ? { params: { status } } : {});
   }
 
-  get(id: number): Observable<Assignment> {
-    return this.http.get<Assignment>(`${this.base}/${id}`);
+  get(slug: string): Observable<Assignment> {
+    return this.http.get<Assignment>(`${this.base}/${slug}`);
   }
 
   create(req: AssignmentRequest): Observable<Assignment> {
     return this.http.post<Assignment>(this.base, req);
   }
 
-  update(id: number, req: AssignmentRequest): Observable<Assignment> {
-    return this.http.put<Assignment>(`${this.base}/${id}`, req);
+  update(slug: string, req: AssignmentRequest): Observable<Assignment> {
+    return this.http.put<Assignment>(`${this.base}/${slug}`, req);
   }
 
-  delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.base}/${id}`);
+  delete(slug: string): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${slug}`);
   }
 }

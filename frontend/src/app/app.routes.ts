@@ -12,7 +12,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/profile/profile').then((m) => m.Profile),
   },
   {
-    path: 'assignments/:id',
+    path: 'assignments/:slug',
     loadComponent: () => import('./pages/assignment-detail/assignment-detail').then((m) => m.AssignmentDetail),
   },
   {

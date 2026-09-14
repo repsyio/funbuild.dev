@@ -17,11 +17,11 @@ export class UserService {
     return this.http.put<UserSummary>(`${this.base}/me`, { displayName });
   }
 
-  updateRole(id: number, role: Role): Observable<UserSummary> {
+  updateRole(id: string, role: Role): Observable<UserSummary> {
     return this.http.put<UserSummary>(`${this.base}/${id}`, { role });
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

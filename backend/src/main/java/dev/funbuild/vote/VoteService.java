@@ -6,6 +6,7 @@ import dev.funbuild.project.ProjectRepository;
 import dev.funbuild.security.AuthenticatedUser;
 import dev.funbuild.user.UserService;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ public class VoteService {
 
   /** Toggles the current user's vote on a project and returns the resulting state. */
   @Transactional
-  public VoteResponse toggle(Long projectId, AuthenticatedUser voter) {
+  public VoteResponse toggle(UUID projectId, AuthenticatedUser voter) {
     Project project =
         projectRepository.findById(projectId).orElseThrow(() -> new NotFoundException("Project not found"));
     Optional<Vote> existing = voteRepository.findByProjectIdAndVoterId(projectId, voter.id());

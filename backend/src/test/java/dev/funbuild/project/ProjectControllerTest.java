@@ -14,6 +14,7 @@ import dev.funbuild.security.SecurityTestConfig;
 import dev.funbuild.user.Role;
 import dev.funbuild.user.UserService;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -65,13 +66,13 @@ class ProjectControllerTest {
 
   private String bearer() {
     return "Bearer "
-        + jwtService.generateToken(1L, "member@funbuild.dev", "Member", Role.MEMBER);
+        + jwtService.generateToken(UUID.randomUUID(), "member@funbuild.dev", "Member", Role.MEMBER);
   }
 
   private String validRequestJson() {
     return """
         {
-          "assignmentId": 1,
+          "assignmentId": "0198f4d2-6a3b-7c9e-8f21-1a2b3c4d5e6f",
           "title": "Turbo Kart",
           "description": "A tiny top-down racer built with Canvas.",
           "showcaseUrl": "https://turbokart.example.com",

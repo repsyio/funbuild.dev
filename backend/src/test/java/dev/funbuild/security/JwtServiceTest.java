@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import dev.funbuild.user.Role;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 class JwtServiceTest {
@@ -13,11 +14,13 @@ class JwtServiceTest {
 
   @Test
   void roundTripsAToken() {
-    String token = jwtService.generateToken(1L, "admin@funbuild.dev", "Admin", Role.ADMIN);
+    UUID id = UUID.randomUUID();
+    String token = jwtService.generateToken(id, "admin@funbuild.dev", "Admin", Role.ADMIN);
 
     var parsed = jwtService.parse(token);
 
     assertTrue(parsed.isPresent());
+    assertEquals(id, parsed.get().id());
     assertEquals(Role.ADMIN, parsed.get().role());
     assertEquals("admin@funbuild.dev", parsed.get().email());
   }
@@ -30,7 +33,7 @@ class JwtServiceTest {
   @Test
   void rejectsATokenSignedWithADifferentSecret() {
     JwtService other = new JwtService("a-completely-different-test-secret-0123456789", 60);
-    String token = other.generateToken(1L, "admin@funbuild.dev", "Admin", Role.ADMIN);
+    String token = other.generateToken(UUID.randomUUID(), "admin@funbuild.dev", "Admin", Role.ADMIN);
 
     assertFalse(jwtService.parse(token).isPresent());
   }

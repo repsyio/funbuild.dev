@@ -15,7 +15,7 @@ export class AdminProjects implements OnInit {
 
   protected readonly projects = signal<Project[]>([]);
   protected readonly loading = signal(true);
-  protected readonly editingId = signal<number | null>(null);
+  protected readonly editingId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.load();

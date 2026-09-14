@@ -11,7 +11,7 @@
     />
   </div>
   @if (showAssignment()) {
-    <a [routerLink]="['/assignments', project().assignmentId]" class="tag tag-outline w-fit whitespace-nowrap">
+    <a [routerLink]="['/assignments', project().assignmentSlug]" class="tag tag-outline w-fit whitespace-nowrap">
       {{ project().assignmentTitle }}
     </a>
   }

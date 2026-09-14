@@ -17,6 +17,7 @@ import dev.funbuild.user.User;
 import dev.funbuild.user.UserService;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -38,11 +39,13 @@ class AssignmentControllerTest {
 
   private static final User ADMIN = new User("admin@funbuild.dev", null, "Admin", null, Role.ADMIN, AuthProvider.LOCAL, null);
   private static final User MEMBER = new User("member@funbuild.dev", null, "Member", null, Role.MEMBER, AuthProvider.LOCAL, null);
+  private static final UUID ADMIN_ID = UUID.randomUUID();
 
   @Test
   void listsAssignments() throws Exception {
     Assignment assignment =
         new Assignment(
+            "mini-racing-game",
             "Mini racing game",
             "Build a small racing game in two weeks.",
             Instant.now().minusSeconds(3600),
@@ -69,7 +72,7 @@ class AssignmentControllerTest {
   void memberCannotCreateAssignment() throws Exception {
     mvc.perform(
             post("/api/assignments")
-                .header(HttpHeaders.AUTHORIZATION, bearerFor(MEMBER, 2L))
+                .header(HttpHeaders.AUTHORIZATION, bearerFor(MEMBER, UUID.randomUUID()))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isForbidden());
@@ -77,11 +80,12 @@ class AssignmentControllerTest {
 
   @Test
   void adminCanCreateAssignment() throws Exception {
-    given(userService.get(1L)).willReturn(ADMIN);
+    given(userService.get(ADMIN_ID)).willReturn(ADMIN);
     given(assignmentService.create(any(), any()))
         .willReturn(
             AssignmentResponse.from(
                 new Assignment(
+                    "mini-racing-game",
                     "Mini racing game",
                     "Build a small racing game.",
                     Instant.now(),
@@ -90,7 +94,7 @@ class AssignmentControllerTest {
 
     mvc.perform(
             post("/api/assignments")
-                .header(HttpHeaders.AUTHORIZATION, bearerFor(ADMIN, 1L))
+                .header(HttpHeaders.AUTHORIZATION, bearerFor(ADMIN, ADMIN_ID))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isOk())
@@ -117,7 +121,7 @@ class AssignmentControllerTest {
         .andExpect(status().isForbidden());
   }
 
-  private String bearerFor(User user, long id) {
+  private String bearerFor(User user, UUID id) {
     return "Bearer " + jwtService.generateToken(id, user.getEmail(), user.getDisplayName(), user.getRole());
   }
 

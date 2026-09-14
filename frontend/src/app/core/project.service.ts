@@ -9,7 +9,7 @@ export class ProjectService {
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/api/projects`;
 
-  list(assignmentId?: number): Observable<Project[]> {
+  list(assignmentId?: string): Observable<Project[]> {
     return this.http.get<Project[]>(this.base, assignmentId ? { params: { assignmentId } } : {});
   }
 
@@ -17,7 +17,7 @@ export class ProjectService {
     return this.http.get<Project[]>(`${this.base}/top`, { params: { limit } });
   }
 
-  get(id: number): Observable<Project> {
+  get(id: string): Observable<Project> {
     return this.http.get<Project>(`${this.base}/${id}`);
   }
 
@@ -25,15 +25,15 @@ export class ProjectService {
     return this.http.post<Project>(this.base, req);
   }
 
-  update(id: number, req: ProjectRequest): Observable<Project> {
+  update(id: string, req: ProjectRequest): Observable<Project> {
     return this.http.put<Project>(`${this.base}/${id}`, req);
   }
 
-  delete(id: number): Observable<void> {
+  delete(id: string): Observable<void> {
     return this.http.delete<void>(`${this.base}/${id}`);
   }
 
-  vote(id: number): Observable<VoteResult> {
+  vote(id: string): Observable<VoteResult> {
     return this.http.post<VoteResult>(`${this.base}/${id}/vote`, {});
   }
 }

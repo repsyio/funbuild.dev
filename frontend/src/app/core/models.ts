@@ -3,7 +3,7 @@ export type AuthProvider = 'LOCAL' | 'GITHUB' | 'GOOGLE';
 export type AssignmentStatus = 'UPCOMING' | 'ACTIVE' | 'EXPIRED';
 
 export interface UserSummary {
-  id: number;
+  id: string;
   email: string;
   displayName: string;
   avatarUrl: string | null;
@@ -12,7 +12,8 @@ export interface UserSummary {
 }
 
 export interface Assignment {
-  id: number;
+  id: string;
+  slug: string;
   title: string;
   description: string;
   startAt: string;
@@ -30,13 +31,14 @@ export interface AssignmentRequest {
 }
 
 export interface TechLabel {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Project {
-  id: number;
-  assignmentId: number;
+  id: string;
+  assignmentId: string;
+  assignmentSlug: string;
   assignmentTitle: string;
   submitter: UserSummary;
   title: string;
@@ -51,7 +53,7 @@ export interface Project {
 }
 
 export interface ProjectRequest {
-  assignmentId: number;
+  assignmentId: string;
   title: string;
   description: string;
   showcaseUrl: string;

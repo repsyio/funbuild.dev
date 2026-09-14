@@ -23,7 +23,7 @@ export class AdminAssignments implements OnInit {
 
   protected readonly assignments = signal<Assignment[]>([]);
   protected readonly loading = signal(true);
-  protected readonly editingId = signal<number | 'new' | null>(null);
+  protected readonly editingId = signal<string | 'new' | null>(null);
   protected readonly error = signal<string | null>(null);
   protected form: FormState = { ...EMPTY_FORM };
 
@@ -53,7 +53,7 @@ export class AdminAssignments implements OnInit {
       endAt: toLocalInputValue(assignment.endAt),
     };
     this.error.set(null);
-    this.editingId.set(assignment.id);
+    this.editingId.set(assignment.slug);
   }
 
   cancel(): void {
@@ -82,7 +82,7 @@ export class AdminAssignments implements OnInit {
     if (!confirm(`Delete "${assignment.title}"? This also removes its submissions.`)) {
       return;
     }
-    this.assignmentService.delete(assignment.id).subscribe(() => this.load());
+    this.assignmentService.delete(assignment.slug).subscribe(() => this.load());
   }
 }
 
