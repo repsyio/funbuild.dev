@@ -62,15 +62,20 @@ export class AuthService {
     });
   }
 
+  /** Patches the cached profile after a self-service update (e.g. changing the display name). */
+  setCurrentUser(user: UserSummary): void {
+    this.currentUserSignal.set(user);
+  }
+
   fetchMe(): Observable<UserSummary> {
     return this.http.get<UserSummary>(`${environment.apiUrl}/api/users/me`).pipe(
       tap((user) => this.currentUserSignal.set(user)),
     );
   }
 
-  register(email: string, password: string, displayName: string): Observable<AuthResponse> {
+  register(email: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${environment.apiUrl}/api/auth/register`, { email, password, displayName })
+      .post<AuthResponse>(`${environment.apiUrl}/api/auth/register`, { email, password })
       .pipe(tap((res) => this.applyAuthResponse(res)));
   }
 

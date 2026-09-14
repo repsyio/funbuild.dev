@@ -1,13 +1,15 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AssignmentCard } from '../../components/assignment-card/assignment-card';
-import { ProjectCard } from '../../components/project-card/project-card';
+import { VoteButton } from '../../components/vote-button/vote-button';
 import { AssignmentService } from '../../core/assignment.service';
+import { initials } from '../../core/initials';
 import { Assignment, Project, VoteResult } from '../../core/models';
 import { ProjectService } from '../../core/project.service';
 
 @Component({
   selector: 'app-home',
-  imports: [AssignmentCard, ProjectCard],
+  imports: [AssignmentCard, VoteButton, RouterLink],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
@@ -17,6 +19,21 @@ export class Home implements OnInit {
   protected readonly activeAssignments = signal<Assignment[]>([]);
   protected readonly topProjects = signal<Project[]>([]);
   protected readonly loading = signal(true);
+
+  protected readonly heroHeadline = computed(() => {
+    const n = this.activeAssignments().length;
+    if (n === 0) {
+      return 'No assignments are open right now. Check back soon.';
+    }
+    return `${n} assignment${n === 1 ? ' is' : 's are'} live. Ship one, climb the board.`;
+  });
+
+  protected readonly podium = computed(() => this.topProjects().slice(0, 3));
+  protected readonly rest = computed(() =>
+    this.topProjects().slice(this.podium().length === 3 ? 3 : 0),
+  );
+
+  protected readonly initials = initials;
 
   ngOnInit(): void {
     this.assignmentService.list('active').subscribe((assignments) => this.activeAssignments.set(assignments));

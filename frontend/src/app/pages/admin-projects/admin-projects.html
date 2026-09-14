@@ -1,34 +1,36 @@
-<h1 class="mb-6 text-2xl font-semibold">Projects</h1>
+<div style="padding: 36px 40px 48px">
+  <h1 style="margin: 0 0 22px; font-size: 24px">Projects</h1>
 
-@if (loading()) {
-  <div class="flex justify-center py-12">
-    <span class="loading loading-spinner loading-lg"></span>
-  </div>
-} @else {
-  <div class="grid gap-4">
-    @for (project of projects(); track project.id) {
-      @if (editingId() === project.id) {
-        <app-project-form [existingProject]="project" (saved)="onSaved()" (cancelled)="editingId.set(null)" />
-      } @else {
-        <div class="card bg-base-100 shadow">
-          <div class="card-body gap-2">
-            <div class="flex items-start justify-between gap-2">
-              <a [routerLink]="['/projects', project.id]" class="card-title link link-hover">{{ project.title }}</a>
-              <span class="badge badge-outline">{{ project.voteCount }} votes</span>
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <div class="flex flex-col gap-3">
+      @for (project of projects(); track project.id) {
+        @if (editingId() === project.id) {
+          <app-project-form [existingProject]="project" (saved)="onSaved()" (cancelled)="editingId.set(null)" />
+        } @else {
+          <div class="card elev-sm flex-row items-center gap-4" style="background: var(--color-surface); padding: 16px 18px">
+            <div class="min-w-0 flex-1">
+              <div class="mb-1 flex items-center gap-2.5">
+                <a [routerLink]="['/projects', project.id]" style="font-weight: 600; font-size: 15px; text-decoration: none; color: inherit">
+                  {{ project.title }}
+                </a>
+                <span class="tag tag-outline">{{ project.voteCount }} votes</span>
+              </div>
+              <a [routerLink]="['/assignments', project.assignmentId]" class="tag tag-outline whitespace-nowrap" style="font-size: 10px">
+                {{ project.assignmentTitle }}
+              </a>
+              <div class="mt-1.5 text-xs" style="color: rgba(233, 233, 237, 0.5)">
+                by {{ project.submitter.displayName }} · {{ project.createdAt | date: 'mediumDate' }}
+              </div>
             </div>
-            <a [routerLink]="['/assignments', project.assignmentId]" class="badge badge-outline w-fit">
-              {{ project.assignmentTitle }}
-            </a>
-            <div class="text-sm opacity-60">
-              by {{ project.submitter.displayName }} · {{ project.createdAt | date: 'medium' }}
-            </div>
-            <div class="card-actions justify-end">
-              <button class="btn btn-ghost btn-sm" (click)="editingId.set(project.id)">Edit</button>
-              <button class="btn btn-error btn-outline btn-sm" (click)="delete(project)">Delete</button>
-            </div>
+            <button class="btn btn-ghost btn-sm" (click)="editingId.set(project.id)">Edit</button>
+            <button class="btn btn-secondary btn-sm" (click)="delete(project)">Delete</button>
           </div>
-        </div>
+        }
       }
-    }
-  </div>
-}
+    </div>
+  }
+</div>

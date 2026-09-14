@@ -16,6 +16,8 @@ export class VoteButton {
   readonly projectId = input.required<number>();
   readonly voteCount = input.required<number>();
   readonly votedByMe = input.required<boolean>();
+  /** 'lg' is used on the project detail page's title row; 'sm' everywhere else. */
+  readonly size = input<'sm' | 'lg'>('sm');
   readonly voted = output<VoteResult>();
 
   protected readonly loading = signal(false);

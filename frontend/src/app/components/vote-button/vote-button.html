@@ -1,10 +1,14 @@
 <button
   type="button"
-  class="btn btn-sm"
-  [class.btn-primary]="votedByMe()"
-  [class.btn-outline]="!votedByMe()"
+  class="vote-pill"
+  [class.voted]="votedByMe()"
+  [class.vote-pill-lg]="size() === 'lg'"
   [disabled]="loading()"
   (click)="toggle()"
 >
-  ▲ {{ voteCount() }}
+  <svg [attr.width]="size() === 'lg' ? 16 : 12" [attr.height]="size() === 'lg' ? 16 : 12" viewBox="0 0 24 24"
+       [attr.fill]="votedByMe() ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="2">
+    <path d="M12 19V5M5 12l7-7 7 7" />
+  </svg>
+  {{ voteCount() }}
 </button>

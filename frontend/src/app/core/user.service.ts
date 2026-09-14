@@ -13,6 +13,10 @@ export class UserService {
     return this.http.get<UserSummary[]>(this.base);
   }
 
+  updateMe(displayName: string): Observable<UserSummary> {
+    return this.http.put<UserSummary>(`${this.base}/me`, { displayName });
+  }
+
   updateRole(id: number, role: Role): Observable<UserSummary> {
     return this.http.put<UserSummary>(`${this.base}/${id}`, { role });
   }

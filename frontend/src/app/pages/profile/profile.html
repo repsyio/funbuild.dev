@@ -1,0 +1,46 @@
+<div class="mx-auto" style="max-width: 520px; padding: 48px 24px 64px">
+  <h1 style="font-size: 28px; margin-bottom: 24px">Your profile</h1>
+
+  @if (auth.currentUser(); as user) {
+    <div class="mb-6 flex items-center gap-3.5">
+      <span class="avatar-circle" style="width: 48px; height: 48px; font-size: 16px">{{ initials(user.displayName) }}</span>
+      <div>
+        <div style="font-weight: 600; font-size: 16px">{{ user.displayName }}</div>
+        <div class="text-[13px]" style="color: rgba(233, 233, 237, 0.55)">{{ user.email }}</div>
+      </div>
+    </div>
+
+    <form class="card elev-md gap-4 p-5.5" style="background: var(--color-surface)" (ngSubmit)="submit()" #form="ngForm">
+      @if (error()) {
+        <div class="text-sm" style="color: var(--color-accent-200)">{{ error() }}</div>
+      }
+      @if (saved()) {
+        <div class="text-sm" style="color: var(--color-accent-200)">Profile updated.</div>
+      }
+
+      <div class="field">
+        <label for="profile-display-name">Display name</label>
+        <input
+          id="profile-display-name"
+          type="text"
+          class="input"
+          name="displayName"
+          [(ngModel)]="displayName"
+          required
+          maxlength="120"
+        />
+      </div>
+
+      <div class="flex justify-end">
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || saving()">Save changes</button>
+      </div>
+    </form>
+
+    <div class="hr"></div>
+
+    <div class="flex flex-wrap gap-2 text-sm">
+      <span class="tag tag-outline">{{ user.role }}</span>
+      <span class="tag tag-neutral">{{ user.authProvider }}</span>
+    </div>
+  }
+</div>

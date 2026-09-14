@@ -1,44 +1,46 @@
-<h1 class="mb-6 text-2xl font-semibold">Users</h1>
+<div style="padding: 36px 40px 48px">
+  <h1 style="margin: 0 0 22px; font-size: 24px">Users</h1>
 
-@if (loading()) {
-  <div class="flex justify-center py-12">
-    <span class="loading loading-spinner loading-lg"></span>
-  </div>
-} @else {
-  <div class="overflow-x-auto">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Provider</th>
-          <th>Role</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (user of users(); track user.id) {
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ user.displayName }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.authProvider }}</td>
-            <td>
-              <select
-                class="select select-bordered select-sm"
-                [value]="user.role"
-                (change)="changeRole(user, $any($event.target).value)"
-              >
-                @for (role of roles; track role) {
-                  <option [value]="role">{{ role }}</option>
-                }
-              </select>
-            </td>
-            <td>
-              <button class="btn btn-error btn-outline btn-sm" (click)="delete(user)">Delete</button>
-            </td>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Provider</th>
+            <th>Role</th>
+            <th></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-}
+        </thead>
+        <tbody>
+          @for (user of users(); track user.id) {
+            <tr>
+              <td style="font-weight: 600">{{ user.displayName }}</td>
+              <td style="color: rgba(233, 233, 237, 0.7)">{{ user.email }}</td>
+              <td><span class="tag tag-neutral">{{ user.authProvider }}</span></td>
+              <td>
+                <select
+                  class="tag"
+                  [class.tag-accent]="user.role === 'ADMIN'"
+                  [class.tag-outline]="user.role === 'MEMBER'"
+                  [value]="user.role"
+                  (change)="changeRole(user, $any($event.target).value)"
+                >
+                  @for (role of roles; track role) {
+                    <option [value]="role">{{ role }}</option>
+                  }
+                </select>
+              </td>
+              <td><button class="btn btn-secondary btn-sm" (click)="delete(user)">Delete</button></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

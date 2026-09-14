@@ -29,6 +29,13 @@ public class UserController {
     return UserSummary.from(service.get(principal.id()));
   }
 
+  @PutMapping("/me")
+  public UserSummary updateMe(
+      @AuthenticationPrincipal AuthenticatedUser principal,
+      @Valid @RequestBody UpdateProfileRequest req) {
+    return UserSummary.from(service.updateDisplayName(principal.id(), req.displayName()));
+  }
+
   @GetMapping
   @PreAuthorize("hasRole('ADMIN')")
   public List<UserSummary> list() {

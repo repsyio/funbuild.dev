@@ -1,30 +1,30 @@
-<div class="card bg-base-100 shadow">
-  <div class="card-body gap-3">
-    <div class="flex items-start justify-between gap-2">
-      <a [routerLink]="['/projects', project().id]" class="card-title link link-hover">{{ project().title }}</a>
-      <app-vote-button
-        [projectId]="project().id"
-        [voteCount]="project().voteCount"
-        [votedByMe]="project().votedByMe"
-        (voted)="voted.emit($event)"
-      />
+<div class="card elev-sm h-full" style="background: var(--color-surface)">
+  <div class="flex items-start justify-between gap-2.5">
+    <a [routerLink]="['/projects', project().id]" class="card-title" style="text-decoration: none; color: inherit">
+      {{ project().title }}
+    </a>
+    <app-vote-button
+      [projectId]="project().id"
+      [voteCount]="project().voteCount"
+      [votedByMe]="project().votedByMe"
+      (voted)="voted.emit($event)"
+    />
+  </div>
+  @if (showAssignment()) {
+    <a [routerLink]="['/assignments', project().assignmentId]" class="tag tag-outline w-fit whitespace-nowrap">
+      {{ project().assignmentTitle }}
+    </a>
+  }
+  <p class="card-body line-clamp-2">{{ project().description }}</p>
+  @if (project().techLabels.length) {
+    <div class="flex flex-wrap gap-1.5">
+      @for (label of project().techLabels; track label.id) {
+        <span class="tag tag-neutral">{{ label.name }}</span>
+      }
     </div>
-    @if (showAssignment()) {
-      <a [routerLink]="['/assignments', project().assignmentId]" class="badge badge-outline w-fit">
-        {{ project().assignmentTitle }}
-      </a>
-    }
-    <p class="line-clamp-2 text-sm opacity-80">{{ project().description }}</p>
-    @if (project().techLabels.length) {
-      <div class="flex flex-wrap gap-1">
-        @for (label of project().techLabels; track label.id) {
-          <span class="badge badge-sm">{{ label.name }}</span>
-        }
-      </div>
-    }
-    <div class="card-actions justify-between text-xs opacity-60">
-      <span>by {{ project().submitter.displayName }}</span>
-      <a [href]="project().showcaseUrl" target="_blank" rel="noopener" class="link">Showcase ↗</a>
-    </div>
+  }
+  <div class="card-meta justify-between">
+    <span>by {{ project().submitter.displayName }}</span>
+    <a [href]="project().showcaseUrl" target="_blank" rel="noopener" style="color: var(--color-accent)">Showcase ↗</a>
   </div>
 </div>

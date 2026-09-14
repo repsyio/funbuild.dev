@@ -1,42 +1,41 @@
-<div class="form-control">
-  <label class="label" for="tech-label-input">
-    <span class="label-text">Tech stack</span>
-  </label>
+<div class="field">
+  <label for="tech-label-input">Tech stack</label>
 
   @if (labels().length) {
-    <div class="mb-2 flex flex-wrap gap-1">
+    <div class="mb-2 flex flex-wrap gap-1.5">
       @for (name of labels(); track name) {
-        <span class="badge badge-primary gap-1">
+        <span class="tag tag-accent inline-flex items-center gap-1.5">
           {{ name }}
-          <button type="button" class="opacity-70 hover:opacity-100" (click)="remove(name)" aria-label="Remove">✕</button>
+          <button type="button" class="chip-x" (click)="remove(name)" aria-label="Remove {{ name }}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <path d="M6 6l12 12M18 6L6 18" />
+            </svg>
+          </button>
         </span>
       }
     </div>
   }
 
-  <div class="dropdown w-full" [class.dropdown-open]="open() && suggestions().length">
-    <input
-      id="tech-label-input"
-      type="text"
-      class="input input-bordered w-full"
-      placeholder="Type to search or add a tech (e.g. TypeScript)"
-      [(ngModel)]="query"
-      (ngModelChange)="onQueryChange()"
-      (focus)="open.set(true)"
-      (blur)="open.set(false)"
-      (keydown.enter)="$event.preventDefault(); addFromQuery()"
-    />
-    @if (suggestions().length) {
-      <ul class="dropdown-content menu z-10 w-full rounded-box bg-base-100 p-2 shadow">
-        @for (label of suggestions(); track label.id) {
-          <li>
-            <button type="button" (mousedown)="$event.preventDefault(); addFromSuggestion(label)">
-              {{ label.name }}
-            </button>
-          </li>
-        }
-      </ul>
-    }
-  </div>
-  <span class="label-text-alt mt-1 opacity-60">Press Enter to add a new label if it's not in the list.</span>
+  <input
+    id="tech-label-input"
+    type="text"
+    class="input"
+    style="margin-bottom: 1px"
+    placeholder="Type to search or add a tech (e.g. TypeScript)"
+    [(ngModel)]="query"
+    (ngModelChange)="onQueryChange()"
+    (focus)="open.set(true)"
+    (blur)="open.set(false)"
+    (keydown.enter)="$event.preventDefault(); addFromQuery()"
+  />
+  @if (open() && suggestions().length) {
+    <div class="panel" style="border-radius: 0 0 var(--radius-md) var(--radius-md)">
+      @for (label of suggestions(); track label.id) {
+        <button type="button" class="panel-item" (mousedown)="$event.preventDefault(); addFromSuggestion(label)">
+          {{ label.name }}
+        </button>
+      }
+    </div>
+  }
+  <span class="text-muted mt-1 block text-xs">Press Enter to add a new label if it's not in the list.</span>
 </div>

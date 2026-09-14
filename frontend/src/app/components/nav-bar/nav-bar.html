@@ -1,24 +1,50 @@
-<div class="navbar bg-base-100 shadow-sm px-4">
-  <div class="flex-1">
-    <a routerLink="/" class="text-xl font-bold">FunBuild</a>
-  </div>
-  <div class="flex items-center gap-2">
+<nav
+  class="nav sticky top-0 z-30"
+  style="background: var(--color-surface); border-bottom: 1px solid var(--color-divider)"
+>
+  <a routerLink="/" class="nav-brand flex items-center gap-2.5">
+    <span class="orb" style="width: 26px; height: 26px"></span>
+    FunBuild
+  </a>
+  <a routerLink="/" fragment="assignments">Assignments</a>
+  <a routerLink="/" fragment="leaderboard">Leaderboard</a>
+
+  <div class="ml-auto flex items-center gap-3.5">
+    @if (auth.isAuthenticated()) {
+      <a routerLink="/" fragment="assignments" class="btn btn-ghost btn-sm hidden sm:inline-flex">Submit a project</a>
+    }
+
     @if (auth.isAdmin()) {
-      <div class="dropdown dropdown-end">
-        <div tabindex="0" role="button" class="btn btn-ghost btn-sm">Admin</div>
-        <ul tabindex="0" class="dropdown-content menu bg-base-200 rounded-box z-10 w-48 p-2 shadow">
-          <li><a routerLink="/admin/assignments">Assignments</a></li>
-          <li><a routerLink="/admin/projects">Projects</a></li>
-          <li><a routerLink="/admin/users">Users</a></li>
-        </ul>
+      <div class="relative">
+        <button
+          type="button"
+          class="btn btn-ghost btn-sm"
+          style="color: var(--color-accent)"
+          (click)="toggleAdminMenu()"
+        >
+          Admin ▾
+        </button>
+        @if (adminMenuOpen()) {
+          <div class="panel absolute top-9 left-0 z-20 w-44 p-1.5">
+            <a routerLink="/admin/assignments" class="panel-item" (click)="adminMenuOpen.set(false)">Assignments</a>
+            <a routerLink="/admin/projects" class="panel-item" (click)="adminMenuOpen.set(false)">Projects</a>
+            <a routerLink="/admin/users" class="panel-item" (click)="adminMenuOpen.set(false)">Users</a>
+          </div>
+        }
       </div>
     }
+
     @if (auth.isAuthenticated()) {
-      <span class="hidden text-sm opacity-70 sm:inline">{{ auth.currentUser()?.displayName }}</span>
-      <button class="btn btn-ghost btn-sm" (click)="logout()">Log out</button>
+      <a routerLink="/profile" class="hidden items-center gap-2.5 sm:flex" style="text-decoration: none">
+        <span class="text-sm" style="color: rgba(233, 233, 237, 0.7)">{{ auth.currentUser()?.displayName }}</span>
+        <span class="avatar-circle" style="width: 32px; height: 32px; font-size: 12px">
+          {{ initials(auth.currentUser()?.displayName ?? '') }}
+        </span>
+      </a>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="logout()">Log out</button>
     } @else {
       <a routerLink="/login" class="btn btn-ghost btn-sm">Log in</a>
       <a routerLink="/register" class="btn btn-primary btn-sm">Sign up</a>
     }
   </div>
-</div>
+</nav>

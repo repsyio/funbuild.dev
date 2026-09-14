@@ -10,13 +10,15 @@ The homepage lists currently active assignments and the all-time most-voted subm
 | Directory | Contents |
 | --- | --- |
 | `backend/` | Spring Boot 4, Java 25, Maven, package-per-feature (`user`, `assignment`, `project`, `techlabel`, `vote`, `security`). JWT bearer auth plus GitHub/Google OAuth2 login. Flyway migrations in `src/main/resources/db/migration`. `Dockerfile` builds the API image. |
-| `frontend/` | Angular 22 (routed, standalone components), Tailwind CSS 4, daisyUI 5, dark theme by default. `Dockerfile` builds an image that only holds the built site in `/site`. |
+| `frontend/` | Angular 22 (routed, standalone components), Tailwind CSS 4 with a custom "Nocturne" dark theme (plain CSS component classes in `src/styles.css`, no UI kit). `Dockerfile` builds an image that only holds the built site in `/site`. |
 | `helm/` | Chart deployed by ArgoCD: Deployment, Service, Ingress (`api.funbuild.dev`), CNPG `Cluster` `funbuild-db`, `CloudflarePage` `funbuild`. |
 
 ## Domain model
 
 Users are `ADMIN` or `MEMBER` (self-registration with email/password, or GitHub/Google OAuth2 —
-the first admin is promoted by hand, see below). Admins create/edit/delete assignments with a
+the first admin is promoted by hand, see below). A new local account starts with a display name
+derived from its email's local part; members can change it afterward on `/profile`
+(`PUT /api/users/me`). Admins create/edit/delete assignments with a
 title, description, start and end date; a member can only submit while the assignment is
 `ACTIVE`. A project submission has a title, description, showcase URL, optional git repo URL, and
 optional free-form tech-stack labels (any member can type a new one into the picker; it's reused

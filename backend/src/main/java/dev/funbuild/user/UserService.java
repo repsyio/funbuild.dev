@@ -29,7 +29,7 @@ public class UserService {
   }
 
   @Transactional
-  public User register(String email, String rawPassword, String displayName) {
+  public User register(String email, String rawPassword) {
     if (repository.existsByEmailIgnoreCase(email)) {
       throw new ConflictException("Email is already registered");
     }
@@ -37,12 +37,18 @@ public class UserService {
         new User(
             email,
             passwordEncoder.encode(rawPassword),
-            displayName,
+            defaultDisplayName(email),
             null,
             Role.MEMBER,
             AuthProvider.LOCAL,
             null);
     return repository.save(user);
+  }
+
+  /** New accounts start with the email's local part as a placeholder name, editable on the profile page. */
+  private static String defaultDisplayName(String email) {
+    String localPart = email.split("@", 2)[0];
+    return localPart.isBlank() ? "Member" : localPart;
   }
 
   public User authenticate(String email, String rawPassword) {
@@ -93,6 +99,13 @@ public class UserService {
   public User updateRole(Long id, Role role) {
     User user = get(id);
     user.setRole(role);
+    return user;
+  }
+
+  @Transactional
+  public User updateDisplayName(Long id, String displayName) {
+    User user = get(id);
+    user.setDisplayName(displayName);
     return user;
   }
 

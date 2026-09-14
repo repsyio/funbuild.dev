@@ -14,14 +14,13 @@ export class Register {
 
   protected email = '';
   protected password = '';
-  protected displayName = '';
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 
   submit(): void {
     this.loading.set(true);
     this.error.set(null);
-    this.auth.register(this.email, this.password, this.displayName).subscribe({
+    this.auth.register(this.email, this.password).subscribe({
       next: () => this.router.navigateByUrl('/'),
       error: (err) => {
         this.loading.set(false);

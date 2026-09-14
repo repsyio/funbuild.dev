@@ -1,48 +1,48 @@
 @if (loading()) {
-  <div class="flex justify-center py-12">
-    <span class="loading loading-spinner loading-lg"></span>
+  <div class="flex justify-center py-16">
+    <div class="spinner"></div>
   </div>
 } @else if (project(); as p) {
-  @if (editing()) {
-    <app-project-form [existingProject]="p" (saved)="onSaved()" (cancelled)="editing.set(false)" />
-  } @else {
-    <div class="card bg-base-100 shadow">
-      <div class="card-body gap-3">
-        <a [routerLink]="['/assignments', p.assignmentId]" class="badge badge-outline w-fit">{{ p.assignmentTitle }}</a>
+  <div class="mx-auto" style="max-width: 760px; padding: 48px 32px 64px">
+    @if (editing()) {
+      <app-project-form [existingProject]="p" (saved)="onSaved()" (cancelled)="editing.set(false)" />
+    } @else {
+      <a [routerLink]="['/assignments', p.assignmentId]" class="tag tag-outline mb-4 inline-block whitespace-nowrap">
+        {{ p.assignmentTitle }}
+      </a>
 
-        <div class="flex items-start justify-between gap-2">
-          <h1 class="card-title text-2xl">{{ p.title }}</h1>
-          <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" (voted)="onVoted($event)" />
-        </div>
+      <div class="mb-4 flex items-start justify-between gap-4">
+        <h1 class="m-0" style="font-size: 32px">{{ p.title }}</h1>
+        <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" size="lg" (voted)="onVoted($event)" />
+      </div>
 
-        <p class="whitespace-pre-line opacity-90">{{ p.description }}</p>
+      <p class="mb-5 whitespace-pre-line" style="color: rgba(233, 233, 237, 0.8); line-height: 1.65">{{ p.description }}</p>
 
-        @if (p.techLabels.length) {
-          <div class="flex flex-wrap gap-1">
-            @for (label of p.techLabels; track label.id) {
-              <span class="badge badge-sm">{{ label.name }}</span>
-            }
-          </div>
-        }
-
-        <div class="flex flex-wrap gap-3 text-sm">
-          <a [href]="p.showcaseUrl" target="_blank" rel="noopener" class="link link-primary">Showcase ↗</a>
-          @if (p.gitRepoUrl) {
-            <a [href]="p.gitRepoUrl" target="_blank" rel="noopener" class="link">Git repo ↗</a>
+      @if (p.techLabels.length) {
+        <div class="mb-5 flex flex-wrap gap-1.5">
+          @for (label of p.techLabels; track label.id) {
+            <span class="tag tag-neutral">{{ label.name }}</span>
           }
         </div>
+      }
 
-        <div class="text-sm opacity-60">
-          by {{ p.submitter.displayName }} · submitted {{ p.createdAt | date: 'medium' }}
-        </div>
-
-        @if (canManage()) {
-          <div class="card-actions justify-end">
-            <button class="btn btn-ghost btn-sm" (click)="editing.set(true)">Edit</button>
-            <button class="btn btn-error btn-sm btn-outline" (click)="delete()">Delete</button>
-          </div>
+      <div class="mb-5 flex gap-5 text-sm">
+        <a [href]="p.showcaseUrl" target="_blank" rel="noopener">Showcase ↗</a>
+        @if (p.gitRepoUrl) {
+          <a [href]="p.gitRepoUrl" target="_blank" rel="noopener" style="color: rgba(233, 233, 237, 0.75)">Git repo ↗</a>
         }
       </div>
-    </div>
-  }
+
+      <div class="mb-6 text-xs" style="color: rgba(233, 233, 237, 0.5)">
+        by {{ p.submitter.displayName }} · submitted {{ p.createdAt | date: 'mediumDate' }}
+      </div>
+
+      @if (canManage()) {
+        <div class="flex justify-end gap-2 pt-4" style="border-top: 1px solid var(--color-divider)">
+          <button class="btn btn-ghost btn-sm" (click)="editing.set(true)">Edit</button>
+          <button class="btn btn-secondary btn-sm" (click)="delete()">Delete</button>
+        </div>
+      }
+    }
+  </div>
 }

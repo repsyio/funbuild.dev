@@ -21,7 +21,7 @@ public class AuthController {
 
   @PostMapping("/register")
   public AuthResponse register(@Valid @RequestBody RegisterRequest req) {
-    User user = userService.register(req.email(), req.password(), req.displayName());
+    User user = userService.register(req.email(), req.password());
     return new AuthResponse(jwtService.generateToken(user), UserSummary.from(user));
   }
 

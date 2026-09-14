@@ -1,35 +1,102 @@
-<section class="mb-10">
-  <div class="mb-4 flex items-center justify-between">
-    <h1 class="text-2xl font-semibold">Active assignments</h1>
+<section id="assignments">
+  <div
+    class="relative overflow-hidden"
+    style="padding: 56px 48px 40px; background: radial-gradient(120% 140% at 15% -10%, var(--color-accent-900) 0%, var(--color-bg) 55%)"
+  >
+    <div class="orb absolute" style="width: 220px; height: 220px; top: -70px; right: 60px; opacity: 0.85"></div>
+    <div class="orb absolute" style="width: 90px; height: 90px; top: 120px; right: 280px; opacity: 0.55"></div>
+    <h6 class="relative" style="color: var(--color-accent-300); margin-bottom: 10px">This cycle's arena</h6>
+    <h1 class="relative" style="font-size: 44px; max-width: 560px; margin-bottom: 8px">{{ heroHeadline() }}</h1>
+    <p class="relative m-0" style="color: rgba(233, 233, 237, 0.65); max-width: 520px">
+      New challenges post every two weeks. Submit before the timer runs out to lock your vote count in.
+    </p>
   </div>
-  @if (activeAssignments().length) {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (assignment of activeAssignments(); track assignment.id) {
-        <app-assignment-card [assignment]="assignment" />
-      }
-    </div>
-  } @else {
-    <div role="alert" class="alert">
-      <span>No assignments are open right now — check back soon.</span>
-    </div>
-  }
+
+  <div class="relative z-10" style="padding: 0 48px 44px; margin-top: -8px">
+    @if (activeAssignments().length) {
+      <div class="scrollx">
+        @for (assignment of activeAssignments(); track assignment.id) {
+          <div style="width: 320px; flex: none">
+            <app-assignment-card [assignment]="assignment" />
+          </div>
+        }
+      </div>
+    } @else {
+      <div class="card elev-sm" style="background: var(--color-surface)">
+        <p class="card-body m-0">No assignments are open right now — check back soon.</p>
+      </div>
+    }
+  </div>
 </section>
 
-<section>
-  <h2 class="mb-4 text-2xl font-semibold">Most voted projects</h2>
+<section id="leaderboard" style="padding: 0 48px 56px">
+  <h6 style="color: var(--color-accent-300); margin-bottom: 16px">All-time leaderboard</h6>
+
   @if (loading()) {
     <div class="flex justify-center py-12">
-      <span class="loading loading-spinner loading-lg"></span>
+      <div class="spinner"></div>
     </div>
-  } @else if (topProjects().length) {
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      @for (project of topProjects(); track project.id) {
-        <app-project-card [project]="project" [showAssignment]="true" (voted)="onVoted(project, $event)" />
-      }
+  } @else if (topProjects().length === 0) {
+    <div class="card elev-sm" style="background: var(--color-surface)">
+      <p class="card-body m-0">No submissions yet — be the first to submit a project!</p>
     </div>
   } @else {
-    <div role="alert" class="alert">
-      <span>No submissions yet — be the first to submit a project!</span>
-    </div>
+    @if (podium().length === 3) {
+      <div class="mb-5 flex flex-col gap-4 sm:flex-row">
+        @if (podium()[1]; as p) {
+          <div class="min-w-0 flex-1 order-1" style="padding: 22px 18px 18px; border-radius: 12px; background: var(--color-surface); box-shadow: var(--shadow-sm)">
+            <div style="font: 700 22px var(--font-heading); color: var(--color-neutral-400)">2nd</div>
+            <span class="avatar-circle my-2.5" style="width: 40px; height: 40px; font-size: 13px">{{ initials(p.submitter.displayName) }}</span>
+            <a [routerLink]="['/projects', p.id]" class="block truncate" style="font-weight: 600; font-size: 15px; text-decoration: none; color: inherit">{{ p.title }}</a>
+            <div class="mb-2.5 truncate text-[12px]" style="color: rgba(233, 233, 237, 0.6)">by {{ p.submitter.displayName }}</div>
+            <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" (voted)="onVoted(p, $event)" />
+          </div>
+        }
+        @if (podium()[0]; as p) {
+          <div class="relative order-2 min-w-0 flex-1" style="padding: 22px 18px 18px; border-radius: 12px; background: linear-gradient(160deg, var(--color-accent-800), var(--color-surface) 65%); box-shadow: var(--shadow-md); transform: translateY(-10px)">
+            <div class="orb absolute" style="width: 70px; height: 70px; top: -30px; right: -16px; opacity: 0.9"></div>
+            <div class="relative" style="font: 700 26px var(--font-heading); color: var(--color-accent-300)">1st</div>
+            <span class="avatar-circle relative my-2.5" style="width: 44px; height: 44px; font-size: 14px; background: var(--color-accent-600)">{{ initials(p.submitter.displayName) }}</span>
+            <a [routerLink]="['/projects', p.id]" class="relative block truncate" style="font-weight: 600; font-size: 16px; text-decoration: none; color: inherit">{{ p.title }}</a>
+            <div class="relative mb-2.5 truncate text-[12px]" style="color: rgba(233, 233, 237, 0.6)">by {{ p.submitter.displayName }}</div>
+            <div class="relative">
+              <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" (voted)="onVoted(p, $event)" />
+            </div>
+          </div>
+        }
+        @if (podium()[2]; as p) {
+          <div class="min-w-0 flex-1 order-3" style="padding: 22px 18px 18px; border-radius: 12px; background: var(--color-surface); box-shadow: var(--shadow-sm)">
+            <div style="font: 700 22px var(--font-heading); color: var(--color-neutral-400)">3rd</div>
+            <span class="avatar-circle my-2.5" style="width: 40px; height: 40px; font-size: 13px">{{ initials(p.submitter.displayName) }}</span>
+            <a [routerLink]="['/projects', p.id]" class="block truncate" style="font-weight: 600; font-size: 15px; text-decoration: none; color: inherit">{{ p.title }}</a>
+            <div class="mb-2.5 truncate text-[12px]" style="color: rgba(233, 233, 237, 0.6)">by {{ p.submitter.displayName }}</div>
+            <app-vote-button [projectId]="p.id" [voteCount]="p.voteCount" [votedByMe]="p.votedByMe" (voted)="onVoted(p, $event)" />
+          </div>
+        }
+      </div>
+    }
+
+    @if (rest().length) {
+      <div class="flex flex-col gap-2">
+        @for (project of rest(); track project.id; let i = $index) {
+          <div class="flex items-center gap-3.5 rounded-lg p-3" style="background: var(--color-surface)">
+            <div class="w-6 shrink-0 text-center" style="font: 600 15px var(--font-heading); color: rgba(233, 233, 237, 0.55)">
+              {{ (podium().length === 3 ? 4 : 1) + i }}
+            </div>
+            <span class="avatar-circle" style="width: 32px; height: 32px; font-size: 11px; background: var(--color-neutral-800); color: var(--color-neutral-100)">
+              {{ initials(project.submitter.displayName) }}
+            </span>
+            <a [routerLink]="['/projects', project.id]" class="min-w-0 flex-1" style="text-decoration: none; color: inherit">
+              <div class="truncate" style="font-weight: 600; font-size: 14px">{{ project.title }}</div>
+              <div class="truncate text-[11px]" style="color: rgba(233, 233, 237, 0.5)">by {{ project.submitter.displayName }}</div>
+            </a>
+            @if (project.techLabels[0]; as label) {
+              <span class="tag tag-neutral">{{ label.name }}</span>
+            }
+            <app-vote-button [projectId]="project.id" [voteCount]="project.voteCount" [votedByMe]="project.votedByMe" (voted)="onVoted(project, $event)" />
+          </div>
+        }
+      </div>
+    }
   }
 </section>

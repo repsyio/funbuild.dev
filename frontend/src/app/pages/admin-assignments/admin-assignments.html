@@ -1,89 +1,91 @@
-<div class="mb-6 flex items-center justify-between">
-  <h1 class="text-2xl font-semibold">Assignments</h1>
-  @if (editingId() === null) {
-    <button class="btn btn-primary btn-sm" (click)="startCreate()">New assignment</button>
-  }
-</div>
+<div style="padding: 36px 40px 48px">
+  <div class="mb-5.5 flex items-center justify-between">
+    <h1 style="margin: 0; font-size: 24px">Assignments</h1>
+    @if (editingId() === null) {
+      <button class="btn btn-primary btn-sm" (click)="startCreate()">New assignment</button>
+    }
+  </div>
 
-@if (editingId() !== null) {
-  <form class="card mb-8 bg-base-100 shadow" (ngSubmit)="save()" #f="ngForm">
-    <div class="card-body gap-4">
-      <h2 class="card-title">{{ editingId() === 'new' ? 'New assignment' : 'Edit assignment' }}</h2>
+  @if (editingId() !== null) {
+    <form
+      class="card elev-md mb-7 gap-4 p-5.5"
+      style="background: var(--color-surface); border: 1px solid color-mix(in srgb, var(--color-accent) 30%, transparent)"
+      (ngSubmit)="save()"
+      #f="ngForm"
+    >
+      <h3 class="m-0">{{ editingId() === 'new' ? 'New assignment' : 'Edit assignment' }}</h3>
 
       @if (error()) {
-        <div role="alert" class="alert alert-error">
-          <span>{{ error() }}</span>
-        </div>
+        <div class="text-sm" style="color: var(--color-accent-200)">{{ error() }}</div>
       }
 
-      <label class="form-control">
-        <span class="label-text mb-1">Title</span>
-        <input type="text" class="input input-bordered" name="title" [(ngModel)]="form.title" required maxlength="200" />
-      </label>
-
-      <label class="form-control">
-        <span class="label-text mb-1">Description</span>
-        <textarea class="textarea textarea-bordered" name="description" rows="4" [(ngModel)]="form.description" required></textarea>
-      </label>
-
-      <div class="grid gap-4 sm:grid-cols-2">
-        <label class="form-control">
-          <span class="label-text mb-1">Starts</span>
-          <input type="datetime-local" class="input input-bordered" name="startAt" [(ngModel)]="form.startAt" required />
-        </label>
-        <label class="form-control">
-          <span class="label-text mb-1">Ends</span>
-          <input type="datetime-local" class="input input-bordered" name="endAt" [(ngModel)]="form.endAt" required />
-        </label>
+      <div class="field">
+        <label for="aa-title">Title</label>
+        <input id="aa-title" type="text" class="input" name="title" placeholder="e.g. Build a Mini Racing Game" [(ngModel)]="form.title" required maxlength="200" />
       </div>
 
-      <div class="card-actions justify-end">
+      <div class="field">
+        <label for="aa-description">Description</label>
+        <textarea id="aa-description" class="input" name="description" rows="3" placeholder="What should members build?" [(ngModel)]="form.description" required></textarea>
+      </div>
+
+      <div class="grid gap-3.5 sm:grid-cols-2">
+        <div class="field">
+          <label for="aa-start">Starts</label>
+          <input id="aa-start" type="datetime-local" class="input" name="startAt" [(ngModel)]="form.startAt" required />
+        </div>
+        <div class="field">
+          <label for="aa-end">Ends</label>
+          <input id="aa-end" type="datetime-local" class="input" name="endAt" [(ngModel)]="form.endAt" required />
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2">
         <button type="button" class="btn btn-ghost" (click)="cancel()">Cancel</button>
         <button type="submit" class="btn btn-primary" [disabled]="f.invalid">Save</button>
       </div>
-    </div>
-  </form>
-}
+    </form>
+  }
 
-@if (loading()) {
-  <div class="flex justify-center py-12">
-    <span class="loading loading-spinner loading-lg"></span>
-  </div>
-} @else {
-  <div class="overflow-x-auto">
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Title</th>
-          <th>Status</th>
-          <th>Starts</th>
-          <th>Ends</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (a of assignments(); track a.id) {
+  @if (loading()) {
+    <div class="flex justify-center py-12">
+      <div class="spinner"></div>
+    </div>
+  } @else {
+    <div class="overflow-x-auto">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ a.title }}</td>
-            <td>
-              <span
-                class="badge"
-                [class.badge-success]="a.status === 'ACTIVE'"
-                [class.badge-info]="a.status === 'UPCOMING'"
-                [class.badge-ghost]="a.status === 'EXPIRED'"
-              >
-                {{ a.status }}
-              </span>
-            </td>
-            <td>{{ a.startAt | date: 'medium' }}</td>
-            <td>{{ a.endAt | date: 'medium' }}</td>
-            <td class="flex gap-2">
-              <button class="btn btn-ghost btn-sm" (click)="startEdit(a)">Edit</button>
-              <button class="btn btn-error btn-outline btn-sm" (click)="delete(a)">Delete</button>
-            </td>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Starts</th>
+            <th>Ends</th>
+            <th></th>
           </tr>
-        }
-      </tbody>
-    </table>
-  </div>
-}
+        </thead>
+        <tbody>
+          @for (a of assignments(); track a.id) {
+            <tr>
+              <td style="font-weight: 600">{{ a.title }}</td>
+              <td>
+                <span
+                  class="tag"
+                  [class]="a.status === 'ACTIVE' ? 'tag-accent' : a.status === 'UPCOMING' ? 'tag-neutral' : 'tag-neutral opacity-60'"
+                  style="text-transform: uppercase"
+                >
+                  {{ a.status }}
+                </span>
+              </td>
+              <td>{{ a.startAt | date: 'mediumDate' }}</td>
+              <td>{{ a.endAt | date: 'mediumDate' }}</td>
+              <td class="flex gap-2">
+                <button class="btn btn-ghost btn-sm" (click)="startEdit(a)">Edit</button>
+                <button class="btn btn-secondary btn-sm" (click)="delete(a)">Delete</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>
