@@ -4,7 +4,7 @@ replicaCount: 1
 image:
   repository: repo.repsy.io/firat/apps/funbuild
   # Updated by .github/workflows/deploy.yml on every push to main
-  tag: sha-b053517
+  tag: sha-d725e2b
   pullPolicy: IfNotPresent
 
 # docker-registry secret created by hand in the namespace (see README)
