@@ -2,10 +2,11 @@ import { Component, ElementRef, HostListener, inject, signal } from '@angular/co
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
 import { initials } from '../../core/initials';
+import { BrandMark } from '../brand-mark/brand-mark';
 
 @Component({
   selector: 'app-nav-bar',
-  imports: [RouterLink],
+  imports: [RouterLink, BrandMark],
   templateUrl: './nav-bar.html',
 })
 export class NavBar {

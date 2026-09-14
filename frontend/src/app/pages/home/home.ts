@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AssignmentCard } from '../../components/assignment-card/assignment-card';
+import { BoltMascot } from '../../components/bolt-mascot/bolt-mascot';
 import { VoteButton } from '../../components/vote-button/vote-button';
 import { AssignmentService } from '../../core/assignment.service';
 import { initials } from '../../core/initials';
@@ -9,7 +10,7 @@ import { ProjectService } from '../../core/project.service';
 
 @Component({
   selector: 'app-home',
-  imports: [AssignmentCard, VoteButton, RouterLink],
+  imports: [AssignmentCard, VoteButton, RouterLink, BoltMascot],
   templateUrl: './home.html',
 })
 export class Home implements OnInit {
