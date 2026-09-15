@@ -27,7 +27,7 @@ export class ProjectDetail implements OnInit {
   }
 
   private load(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = this.route.snapshot.paramMap.get('id')!;
     this.loading.set(true);
     this.projectService.get(id).subscribe((project) => {
       this.project.set(project);
@@ -61,6 +61,6 @@ export class ProjectDetail implements OnInit {
     if (!project || !confirm('Delete this project submission?')) {
       return;
     }
-    this.projectService.delete(project.id).subscribe(() => this.router.navigateByUrl(`/assignments/${project.assignmentId}`));
+    this.projectService.delete(project.id).subscribe(() => this.router.navigateByUrl(`/assignments/${project.assignmentSlug}`));
   }
 }

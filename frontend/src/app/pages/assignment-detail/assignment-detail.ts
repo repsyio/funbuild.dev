@@ -28,15 +28,15 @@ export class AssignmentDetail implements OnInit {
   protected readonly timeLeft = timeLeft;
 
   ngOnInit(): void {
-    const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.assignmentService.get(id).subscribe((assignment) => {
+    const slug = this.route.snapshot.paramMap.get('slug')!;
+    this.assignmentService.get(slug).subscribe((assignment) => {
       this.assignment.set(assignment);
       this.loading.set(false);
+      this.loadProjects(assignment.id);
     });
-    this.loadProjects(id);
   }
 
-  private loadProjects(assignmentId: number): void {
+  private loadProjects(assignmentId: string): void {
     this.projectService.list(assignmentId).subscribe((projects) => this.projects.set(projects));
   }
 

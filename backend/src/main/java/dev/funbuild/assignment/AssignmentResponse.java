@@ -2,9 +2,11 @@ package dev.funbuild.assignment;
 
 import dev.funbuild.user.UserSummary;
 import java.time.Instant;
+import java.util.UUID;
 
 public record AssignmentResponse(
-    Long id,
+    UUID id,
+    String slug,
     String title,
     String description,
     Instant startAt,
@@ -16,6 +18,7 @@ public record AssignmentResponse(
   public static AssignmentResponse from(Assignment assignment) {
     return new AssignmentResponse(
         assignment.getId(),
+        assignment.getSlug(),
         assignment.getTitle(),
         assignment.getDescription(),
         assignment.getStartAt(),

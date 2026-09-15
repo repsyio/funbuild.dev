@@ -34,9 +34,9 @@ public class AssignmentController {
     return "active".equalsIgnoreCase(status) ? service.listActive() : service.listAll();
   }
 
-  @GetMapping("/{id}")
-  public AssignmentResponse get(@PathVariable Long id) {
-    return service.get(id);
+  @GetMapping("/{slug}")
+  public AssignmentResponse get(@PathVariable String slug) {
+    return service.get(slug);
   }
 
   @PostMapping
@@ -46,16 +46,16 @@ public class AssignmentController {
     return service.create(req, userService.get(principal.id()));
   }
 
-  @PutMapping("/{id}")
+  @PutMapping("/{slug}")
   @PreAuthorize("hasRole('ADMIN')")
-  public AssignmentResponse update(@PathVariable Long id, @Valid @RequestBody AssignmentRequest req) {
-    return service.update(id, req);
+  public AssignmentResponse update(@PathVariable String slug, @Valid @RequestBody AssignmentRequest req) {
+    return service.update(slug, req);
   }
 
-  @DeleteMapping("/{id}")
+  @DeleteMapping("/{slug}")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
-    service.delete(id);
+  public ResponseEntity<Void> delete(@PathVariable String slug) {
+    service.delete(slug);
     return ResponseEntity.noContent().build();
   }
 }

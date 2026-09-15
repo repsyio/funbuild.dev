@@ -3,6 +3,7 @@ package dev.funbuild.project;
 import dev.funbuild.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,7 +28,7 @@ public class ProjectController {
 
   @GetMapping
   public List<ProjectResponse> list(
-      @RequestParam(required = false) Long assignmentId, @AuthenticationPrincipal AuthenticatedUser viewer) {
+      @RequestParam(required = false) UUID assignmentId, @AuthenticationPrincipal AuthenticatedUser viewer) {
     return service.list(assignmentId, viewer);
   }
 
@@ -39,7 +40,7 @@ public class ProjectController {
   }
 
   @GetMapping("/{id}")
-  public ProjectResponse get(@PathVariable Long id, @AuthenticationPrincipal AuthenticatedUser viewer) {
+  public ProjectResponse get(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser viewer) {
     return service.get(id, viewer);
   }
 
@@ -51,14 +52,14 @@ public class ProjectController {
 
   @PutMapping("/{id}")
   public ProjectResponse update(
-      @PathVariable Long id,
+      @PathVariable UUID id,
       @Valid @RequestBody ProjectRequest req,
       @AuthenticationPrincipal AuthenticatedUser currentUser) {
     return service.update(id, req, currentUser);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable Long id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+  public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
     service.delete(id, currentUser);
     return ResponseEntity.noContent().build();
   }

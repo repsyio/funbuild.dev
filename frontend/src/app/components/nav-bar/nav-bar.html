@@ -10,10 +10,6 @@
   <a routerLink="/" fragment="leaderboard">Leaderboard</a>
 
   <div class="ml-auto flex items-center gap-3.5">
-    @if (auth.isAuthenticated()) {
-      <a routerLink="/" fragment="assignments" class="btn btn-ghost btn-sm hidden sm:inline-flex">Submit a project</a>
-    }
-
     @if (auth.isAdmin()) {
       <div class="relative">
         <button

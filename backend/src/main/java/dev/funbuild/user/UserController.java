@@ -3,6 +3,7 @@ package dev.funbuild.user;
 import dev.funbuild.security.AuthenticatedUser;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,13 +45,13 @@ public class UserController {
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  public UserSummary updateRole(@PathVariable Long id, @Valid @RequestBody UserRoleUpdateRequest req) {
+  public UserSummary updateRole(@PathVariable UUID id, @Valid @RequestBody UserRoleUpdateRequest req) {
     return UserSummary.from(service.updateRole(id, req.role()));
   }
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  public ResponseEntity<Void> delete(@PathVariable Long id) {
+  public ResponseEntity<Void> delete(@PathVariable UUID id) {
     service.delete(id);
     return ResponseEntity.noContent().build();
   }

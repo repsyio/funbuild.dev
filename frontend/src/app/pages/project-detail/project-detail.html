@@ -7,7 +7,7 @@
     @if (editing()) {
       <app-project-form [existingProject]="p" (saved)="onSaved()" (cancelled)="editing.set(false)" />
     } @else {
-      <a [routerLink]="['/assignments', p.assignmentId]" class="tag tag-outline mb-4 inline-block whitespace-nowrap">
+      <a [routerLink]="['/assignments', p.assignmentSlug]" class="tag tag-outline mb-4 inline-block whitespace-nowrap">
         {{ p.assignmentTitle }}
       </a>
 

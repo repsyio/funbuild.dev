@@ -19,7 +19,7 @@
                 </a>
                 <span class="tag tag-outline">{{ project.voteCount }} votes</span>
               </div>
-              <a [routerLink]="['/assignments', project.assignmentId]" class="tag tag-outline whitespace-nowrap" style="font-size: 10px">
+              <a [routerLink]="['/assignments', project.assignmentSlug]" class="tag tag-outline whitespace-nowrap" style="font-size: 10px">
                 {{ project.assignmentTitle }}
               </a>
               <div class="mt-1.5 text-xs" style="color: rgba(233, 233, 237, 0.5)">

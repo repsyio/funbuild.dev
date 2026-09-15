@@ -4,10 +4,12 @@ import dev.funbuild.techlabel.TechLabelResponse;
 import dev.funbuild.user.UserSummary;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 public record ProjectResponse(
-    Long id,
-    Long assignmentId,
+    UUID id,
+    UUID assignmentId,
+    String assignmentSlug,
     String assignmentTitle,
     UserSummary submitter,
     String title,
@@ -24,6 +26,7 @@ public record ProjectResponse(
     return new ProjectResponse(
         project.getId(),
         project.getAssignment().getId(),
+        project.getAssignment().getSlug(),
         project.getAssignment().getTitle(),
         UserSummary.from(project.getSubmitter()),
         project.getTitle(),
