@@ -17,7 +17,7 @@ describe('App', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).toContain('FunBuild');
+    expect(compiled.textContent).toContain('funbuild.dev');
     expect(compiled.textContent).toContain('Log in');
   });
 });

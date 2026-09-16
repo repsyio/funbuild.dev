@@ -2,10 +2,11 @@
   class="nav sticky top-0 z-30"
   style="background: var(--color-surface); border-bottom: 1px solid var(--color-divider)"
 >
-  <a routerLink="/" class="nav-brand flex items-center gap-2.5">
+  <a routerLink="/" class="nav-brand flex items-center gap-2.5" style="margin-right: 0">
     <app-brand-mark [size]="26" />
-    FunBuild
+    <span>funbuild<span style="color: var(--color-accent-300)">.dev</span></span>
   </a>
+  <div style="width: 1px; height: 18px; background: var(--color-divider); margin: 0 4px"></div>
   <a routerLink="/" fragment="assignments">Assignments</a>
   <a routerLink="/" fragment="leaderboard">Leaderboard</a>
 
