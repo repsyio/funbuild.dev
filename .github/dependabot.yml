@@ -25,6 +25,11 @@ updates:
       - /frontend
     schedule:
       interval: weekly
+    ignore:
+      # Keep the Node and Java runtime image versions pinned until upgraded intentionally.
+      - dependency-name: "node"
+      - dependency-name: "maven"
+      - dependency-name: "eclipse-temurin"
 
   - package-ecosystem: github-actions
     directory: /
