@@ -6,6 +6,13 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
 
   - package-ecosystem: npm
     directory: /frontend
@@ -14,10 +21,12 @@ updates:
     schedule:
       interval: weekly
     groups:
-      angular:
+      minor-updates:
+        applies-to: version-updates
         patterns:
-          - "@angular/*"
-          - "@angular-devkit/*"
+          - "*"
+        update-types:
+          - minor
     ignore:
       # Angular pins its supported TypeScript range; take TypeScript majors together with an Angular upgrade
       - dependency-name: "typescript"
@@ -31,6 +40,13 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
     ignore:
       # Keep the Node and Java runtime image versions pinned until upgraded intentionally.
       - dependency-name: "node"
@@ -43,3 +59,10 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
