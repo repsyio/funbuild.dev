@@ -28,11 +28,6 @@ export class Home implements OnInit {
     return `${n} assignment${n === 1 ? ' is' : 's are'} live. Ship one, climb the board.`;
   });
 
-  protected readonly podium = computed(() => this.topProjects().slice(0, 3));
-  protected readonly rest = computed(() =>
-    this.topProjects().slice(this.podium().length === 3 ? 3 : 0),
-  );
-
   protected readonly initials = initials;
 
   ngOnInit(): void {
