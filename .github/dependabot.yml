@@ -2,11 +2,15 @@ version: 2
 updates:
   - package-ecosystem: maven
     directory: /backend
+    labels:
+      - dependencies
     schedule:
       interval: weekly
 
   - package-ecosystem: npm
     directory: /frontend
+    labels:
+      - dependencies
     schedule:
       interval: weekly
     groups:
@@ -23,6 +27,8 @@ updates:
     directories:
       - /backend
       - /frontend
+    labels:
+      - dependencies
     schedule:
       interval: weekly
     ignore:
@@ -33,5 +39,7 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    labels:
+      - dependencies
     schedule:
       interval: weekly
