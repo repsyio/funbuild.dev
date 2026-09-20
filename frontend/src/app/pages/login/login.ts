@@ -30,7 +30,7 @@ export class Login {
       next: () => this.router.navigateByUrl('/'),
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err?.error?.message ?? 'Invalid email or password.');
+        this.error.set(err?.error?.text ?? err?.error?.message ?? 'Invalid email or password.');
       },
     });
   }

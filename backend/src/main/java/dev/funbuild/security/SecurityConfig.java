@@ -1,20 +1,23 @@
 package dev.funbuild.security;
 
+import io.repsy.core.response.services.RestResponseFactory;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.cors.CorsConfigurationSource;
+import tools.jackson.databind.ObjectMapper;
 
 @Configuration
 @EnableWebSecurity
@@ -43,7 +46,9 @@ public class SecurityConfig {
       JwtAuthFilter jwtAuthFilter,
       CustomOAuth2UserService customOAuth2UserService,
       OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler,
-      OAuth2LoginFailureHandler oAuth2LoginFailureHandler)
+      OAuth2LoginFailureHandler oAuth2LoginFailureHandler,
+      AuthenticationEntryPoint unauthorizedEntryPoint,
+      AccessDeniedHandler accessDeniedHandler)
       throws Exception {
     http.csrf(csrf -> csrf.disable())
         .securityContext(context -> context.securityContextRepository(securityContextRepository))
@@ -62,7 +67,8 @@ public class SecurityConfig {
                     .permitAll()
                     .anyRequest()
                     .authenticated())
-        .exceptionHandling(e -> e.authenticationEntryPoint(unauthorizedEntryPoint()))
+        .exceptionHandling(
+            e -> e.authenticationEntryPoint(unauthorizedEntryPoint).accessDeniedHandler(accessDeniedHandler))
         .oauth2Login(
             oauth2 ->
                 oauth2
@@ -73,11 +79,22 @@ public class SecurityConfig {
     return http.build();
   }
 
-  private AuthenticationEntryPoint unauthorizedEntryPoint() {
-    return (request, response, authException) -> {
-      response.setStatus(401);
-      response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-      response.getWriter().write("{\"message\":\"Unauthorized\"}");
-    };
+  @Bean
+  AuthenticationEntryPoint unauthorizedEntryPoint(RestResponseFactory responses, ObjectMapper objectMapper) {
+    return (request, response, authException) ->
+        writeError(response, objectMapper, responses.error("auth.unauthorized"), HttpServletResponse.SC_UNAUTHORIZED);
+  }
+
+  @Bean
+  AccessDeniedHandler accessDeniedHandler(RestResponseFactory responses, ObjectMapper objectMapper) {
+    return (request, response, accessDeniedException) ->
+        writeError(response, objectMapper, responses.error("auth.forbidden"), HttpServletResponse.SC_FORBIDDEN);
+  }
+
+  private void writeError(
+      HttpServletResponse response, ObjectMapper objectMapper, Object body, int status) throws java.io.IOException {
+    response.setStatus(status);
+    response.setContentType("application/json");
+    objectMapper.writeValue(response.getOutputStream(), body);
   }
 }

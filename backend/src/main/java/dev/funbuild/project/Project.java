@@ -3,6 +3,7 @@ package dev.funbuild.project;
 import dev.funbuild.assignment.Assignment;
 import dev.funbuild.techlabel.TechLabel;
 import dev.funbuild.user.User;
+import io.repsy.core.uuidv7.UuidV7;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -18,14 +19,13 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.Formula;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "projects")
 public class Project {
 
   @Id
-  @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+  @UuidV7
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)

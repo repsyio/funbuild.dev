@@ -62,7 +62,7 @@ export class ProjectForm implements OnInit {
       },
       error: (err) => {
         this.saving.set(false);
-        this.error.set(err?.error?.message ?? 'Could not save the project. Please try again.');
+        this.error.set(err?.error?.text ?? err?.error?.message ?? 'Could not save the project. Please try again.');
       },
     });
   }

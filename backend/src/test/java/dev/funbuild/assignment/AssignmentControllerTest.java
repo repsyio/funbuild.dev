@@ -55,8 +55,9 @@ class AssignmentControllerTest {
 
     mvc.perform(get("/api/assignments").param("status", "active"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].title").value("Mini racing game"))
-        .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data[0].title").value("Mini racing game"))
+        .andExpect(jsonPath("$.data[0].status").value("ACTIVE"));
   }
 
   @Test
@@ -98,7 +99,7 @@ class AssignmentControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.title").value("Mini racing game"));
+        .andExpect(jsonPath("$.data.title").value("Mini racing game"));
   }
 
   @Test

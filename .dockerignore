@@ -1,0 +1,8 @@
+.git
+.angular
+backend/target
+frontend/node_modules
+frontend/dist
+core/*/target
+core/.git
+core/.github

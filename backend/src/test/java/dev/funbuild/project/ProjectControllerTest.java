@@ -61,7 +61,9 @@ class ProjectControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.message").value("This assignment is no longer accepting submissions"));
+        .andExpect(jsonPath("$.type").value("ERROR"))
+        .andExpect(jsonPath("$.text").value("This assignment is no longer accepting submissions"))
+        .andExpect(jsonPath("$.errorCode").isNotEmpty());
   }
 
   private String bearer() {

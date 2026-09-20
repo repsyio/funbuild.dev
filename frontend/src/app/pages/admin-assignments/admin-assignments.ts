@@ -74,7 +74,7 @@ export class AdminAssignments implements OnInit {
         this.editingId.set(null);
         this.load();
       },
-      error: (err) => this.error.set(err?.error?.message ?? 'Could not save the assignment.'),
+      error: (err) => this.error.set(err?.error?.text ?? err?.error?.message ?? 'Could not save the assignment.'),
     });
   }
 
