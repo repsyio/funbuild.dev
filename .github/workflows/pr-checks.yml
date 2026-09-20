@@ -16,7 +16,7 @@ concurrency:
 jobs:
   editorconfig:
     name: EditorConfig
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-2x
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -30,7 +30,7 @@ jobs:
 
   backend:
     name: Backend tests and coverage
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-2x
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
@@ -72,7 +72,7 @@ jobs:
 
   frontend:
     name: Frontend build and tests
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-2x
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 

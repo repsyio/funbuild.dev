@@ -14,7 +14,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze main branch
-    runs-on: ubuntu-latest
+    runs-on: warp-ubuntu-latest-x64-2x
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
