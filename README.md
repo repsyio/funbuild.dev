@@ -65,6 +65,27 @@ The development build calls the API on its own origin (through the proxy). The p
 
 Tests: `./mvnw verify` in `backend`, `npx ng test --watch=false` in `frontend`.
 
+### API contract and generated models
+
+The version-controlled OpenAPI source of truth is
+[`backend/src/main/openapi/openapi.yaml`](backend/src/main/openapi/openapi.yaml). It covers every
+`/api` endpoint, JWT bearer authentication, the OAuth authorization-code flows, request validation,
+and both normal and error responses.
+
+`./mvnw verify` validates the contract before generating Java transport models into
+`backend/target/generated-sources/openapi`. Those files are compiled as part of the ordinary Maven
+build and must never be edited or committed. Because generation always starts from the checked-in
+contract, a clean CI build both regenerates the artifacts and fails for an invalid or inconsistent
+specification. The existing feature-local request/response records remain deliberately as thin
+server-side adapters: they provide the static entity-to-response mapping used by the service layer,
+while the generated `dev.funbuild.api.model` package is the transport-model artifact. JPA entities
+are not exposed.
+
+The Angular app currently has hand-written TypeScript view models in `frontend/src/app/core/models.ts`.
+Frontend generation is intentionally separate: no generated TypeScript client is committed, so its
+build stays independent of the backend Maven toolchain. If a typed frontend client is introduced,
+it must be generated from the same OpenAPI document.
+
 ## Deployment
 
 1. A push to `main` runs `.github/workflows/deploy.yml`. It runs the tests, then builds and pushes `repo.repsy.io/firat/apps/funbuild:sha-<short>` (backend) and `repo.repsy.io/firat/apps/funbuild-frontend:sha-<short>`, both also as `:latest`.

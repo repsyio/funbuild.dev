@@ -1,0 +1,388 @@
+openapi: 3.1.0
+info:
+  title: funbuild API
+  version: 1.0.0
+  description: |
+    Contract for the funbuild REST API. The Maven build validates this document and
+    generates server transport models from it. OAuth authorization endpoints redirect
+    the browser and are documented under security schemes rather than as JSON APIs.
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.funbuild.dev
+    description: Production
+tags:
+  - name: Authentication
+  - name: Users
+  - name: Assignments
+  - name: Projects
+  - name: Tech labels
+  - name: Votes
+paths:
+  /api/auth/register:
+    post:
+      tags: [Authentication]
+      summary: Register with email and password
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200': { description: Registered, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/auth/login:
+    post:
+      tags: [Authentication]
+      summary: Log in with email and password
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { description: Authenticated, content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/users/me:
+    get:
+      tags: [Users]
+      summary: Get the authenticated user
+      operationId: getCurrentUser
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Current user, content: { application/json: { schema: { $ref: '#/components/schemas/UserSummary' } } } }
+        '401': { $ref: '#/components/responses/ApiError' }
+    put:
+      tags: [Users]
+      summary: Update the authenticated user's display name
+      operationId: updateCurrentUser
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200': { description: Updated user, content: { application/json: { schema: { $ref: '#/components/schemas/UserSummary' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List users
+      operationId: listUsers
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Users, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/UserSummary' } } } } }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/users/{id}:
+    parameters: [{ $ref: '#/components/parameters/UserId' }]
+    put:
+      tags: [Users]
+      summary: Change a user's role
+      operationId: updateUserRole
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserRoleUpdateRequest' }
+      responses:
+        '200': { description: Updated user, content: { application/json: { schema: { $ref: '#/components/schemas/UserSummary' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      tags: [Users]
+      summary: Delete a user
+      operationId: deleteUser
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: User deleted }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/assignments:
+    get:
+      tags: [Assignments]
+      summary: List assignments
+      operationId: listAssignments
+      parameters:
+        - name: status
+          in: query
+          description: Use `active` to return only active assignments; any other value returns all assignments.
+          schema: { type: string }
+      responses:
+        '200': { description: Assignments, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/AssignmentResponse' } } } } }
+    post:
+      tags: [Assignments]
+      summary: Create an assignment
+      operationId: createAssignment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentRequest' } } }
+      responses:
+        '200': { description: Assignment created, content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/assignments/{slug}:
+    parameters: [{ $ref: '#/components/parameters/AssignmentSlug' }]
+    get:
+      tags: [Assignments]
+      summary: Get an assignment by slug
+      operationId: getAssignment
+      responses:
+        '200': { description: Assignment, content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentResponse' } } } }
+        '404': { $ref: '#/components/responses/ApiError' }
+    put:
+      tags: [Assignments]
+      summary: Update an assignment
+      operationId: updateAssignment
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentRequest' } } }
+      responses:
+        '200': { description: Updated assignment, content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      tags: [Assignments]
+      summary: Delete an assignment
+      operationId: deleteAssignment
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Assignment deleted }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/projects:
+    get:
+      tags: [Projects]
+      summary: List projects
+      operationId: listProjects
+      parameters:
+        - name: assignmentId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: Projects, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ProjectResponse' } } } } }
+    post:
+      tags: [Projects]
+      summary: Submit a project
+      operationId: createProject
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProjectRequest' } } }
+      responses:
+        '200': { description: Project submitted, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/projects/top:
+    get:
+      tags: [Projects]
+      summary: List the highest-voted projects
+      operationId: listTopProjects
+      parameters:
+        - name: limit
+          in: query
+          description: Maximum number of projects. Values above 50 are capped at 50.
+          schema: { type: integer, default: 10 }
+      responses:
+        '200': { description: Projects, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/ProjectResponse' } } } } }
+  /api/projects/{id}:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    get:
+      tags: [Projects]
+      summary: Get a project
+      operationId: getProject
+      responses:
+        '200': { description: Project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '404': { $ref: '#/components/responses/ApiError' }
+    put:
+      tags: [Projects]
+      summary: Update a project
+      operationId: updateProject
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ProjectRequest' } } }
+      responses:
+        '200': { description: Updated project, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectResponse' } } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      tags: [Projects]
+      summary: Delete a project
+      operationId: deleteProject
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: Project deleted }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/projects/{id}/vote:
+    parameters: [{ $ref: '#/components/parameters/ProjectId' }]
+    post:
+      tags: [Votes]
+      summary: Toggle the authenticated user's vote on a project
+      operationId: toggleProjectVote
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: Updated vote state, content: { application/json: { schema: { $ref: '#/components/schemas/VoteResponse' } } } }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/tech-labels:
+    get:
+      tags: [Tech labels]
+      summary: Search tech labels
+      operationId: searchTechLabels
+      parameters:
+        - name: q
+          in: query
+          description: Optional text used to filter label names.
+          schema: { type: string }
+      responses:
+        '200': { description: Tech labels, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/TechLabelResponse' } } } } }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT returned by the login and registration operations.
+    githubOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/authorization/github
+          tokenUrl: /login/oauth2/code/github
+          scopes: {}
+    googleOAuth:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /oauth2/authorization/google
+          tokenUrl: /login/oauth2/code/google
+          scopes: {}
+  parameters:
+    UserId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    ProjectId: { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    AssignmentSlug: { name: slug, in: path, required: true, schema: { type: string } }
+  responses:
+    ApiError:
+      description: An API error.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ApiError' } } }
+    ValidationError:
+      description: Validation errors keyed by invalid request field.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ValidationError' } } }
+  schemas:
+    ApiError:
+      type: object
+      required: [message]
+      properties: { message: { type: string } }
+    ValidationError:
+      type: object
+      additionalProperties: { type: string }
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email, maxLength: 255 }
+        password: { type: string, minLength: 8, maxLength: 100 }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties: { email: { type: string, minLength: 1 }, password: { type: string, minLength: 1 } }
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties: { token: { type: string }, user: { $ref: '#/components/schemas/UserSummary' } }
+    UpdateProfileRequest:
+      type: object
+      required: [displayName]
+      properties: { displayName: { type: string, minLength: 1, maxLength: 120 } }
+    UserRoleUpdateRequest:
+      type: object
+      required: [role]
+      properties: { role: { $ref: '#/components/schemas/Role' } }
+    UserSummary:
+      type: object
+      required: [id, email, displayName, role, authProvider]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: [string, 'null'], format: uri }
+        role: { $ref: '#/components/schemas/Role' }
+        authProvider: { $ref: '#/components/schemas/AuthProvider' }
+    Role: { type: string, enum: [ADMIN, MEMBER] }
+    AuthProvider: { type: string, enum: [LOCAL, GITHUB, GOOGLE] }
+    AssignmentRequest:
+      type: object
+      required: [title, description, startAt, endAt]
+      properties:
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, minLength: 1 }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+    AssignmentResponse:
+      allOf:
+        - $ref: '#/components/schemas/AssignmentRequest'
+        - type: object
+          required: [id, slug, status, createdBy, createdAt]
+          properties:
+            id: { type: string, format: uuid }
+            slug: { type: string }
+            status: { $ref: '#/components/schemas/AssignmentStatus' }
+            createdBy: { $ref: '#/components/schemas/UserSummary' }
+            createdAt: { type: string, format: date-time }
+    AssignmentStatus: { type: string, enum: [UPCOMING, ACTIVE, EXPIRED] }
+    ProjectRequest:
+      type: object
+      required: [assignmentId, title, description, showcaseUrl]
+      properties:
+        assignmentId: { type: string, format: uuid }
+        title: { type: string, minLength: 1, maxLength: 200 }
+        description: { type: string, minLength: 1 }
+        showcaseUrl: { type: string, format: uri, maxLength: 500 }
+        gitRepoUrl: { type: [string, 'null'], format: uri, maxLength: 500 }
+        techLabels: { type: array, items: { type: string } }
+    ProjectResponse:
+      allOf:
+        - $ref: '#/components/schemas/ProjectRequest'
+        - type: object
+          required: [id, assignmentSlug, assignmentTitle, submitter, techLabels, voteCount, votedByMe, createdAt, updatedAt]
+          properties:
+            id: { type: string, format: uuid }
+            assignmentSlug: { type: string }
+            assignmentTitle: { type: string }
+            submitter: { $ref: '#/components/schemas/UserSummary' }
+            techLabels: { type: array, items: { $ref: '#/components/schemas/TechLabelResponse' } }
+            voteCount: { type: integer, format: int64, minimum: 0 }
+            votedByMe: { type: boolean }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    TechLabelResponse:
+      type: object
+      required: [id, name]
+      properties: { id: { type: string, format: uuid }, name: { type: string } }
+    VoteResponse:
+      type: object
+      required: [voteCount, votedByMe]
+      properties: { voteCount: { type: integer, format: int64, minimum: 0 }, votedByMe: { type: boolean } }
