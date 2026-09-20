@@ -64,6 +64,9 @@ cd frontend && npm ci && npm start          # http://localhost:4200, proxies /ap
 The development build calls the API on its own origin (through the proxy). The production build calls `https://api.funbuild.dev` (`frontend/src/environments/environment.ts`). The backend allows cross-origin requests from `APP_CORS_ALLOWED_ORIGINS`, which defaults to `http://localhost:4200`, and redirects OAuth2 logins back to `APP_FRONTEND_URL` (same default). `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET`/`GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` and `APP_JWT_SECRET` all have local-dev defaults, so OAuth2 login won't work locally unless you set real values, but registration/login and everything else does.
 
 Tests: `./mvnw verify` in `backend`, `npx ng test --watch=false` in `frontend`.
+The backend verification lifecycle enforces Java 25 and Maven 3.9.7 or newer, runs
+Checkstyle and SpotBugs, writes `target/site/jacoco/jacoco.xml`, and requires at
+least 80% JaCoCo instruction coverage. CI runs this same `verify` command.
 
 ### API contract and generated models
 
