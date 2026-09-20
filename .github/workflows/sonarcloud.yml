@@ -1,0 +1,46 @@
+name: SonarCloud Analysis
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  analyze:
+    name: Analyze main branch
+    runs-on: warp-ubuntu-latest-x64-2x
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Build and verify
+        working-directory: backend
+        run: ./mvnw -B -ntp verify
+
+      - name: Analyze backend with SonarCloud
+        if: env.SONAR_TOKEN != ''
+        env:
+          SONAR_HOST_URL: https://sonarcloud.io
+        working-directory: backend
+        run: >-
+          ./mvnw -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+          -Dsonar.projectKey=repsyio_funbuild.dev
+          -Dsonar.organization=repsy
+          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml

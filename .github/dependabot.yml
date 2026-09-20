@@ -2,18 +2,31 @@ version: 2
 updates:
   - package-ecosystem: maven
     directory: /backend
-    schedule:
-      interval: weekly
-
-  - package-ecosystem: npm
-    directory: /frontend
+    labels:
+      - dependencies
     schedule:
       interval: weekly
     groups:
-      angular:
+      minor-updates:
+        applies-to: version-updates
         patterns:
-          - "@angular/*"
-          - "@angular-devkit/*"
+          - "*"
+        update-types:
+          - minor
+
+  - package-ecosystem: npm
+    directory: /frontend
+    labels:
+      - dependencies
+    schedule:
+      interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
     ignore:
       # Angular pins its supported TypeScript range; take TypeScript majors together with an Angular upgrade
       - dependency-name: "typescript"
@@ -23,8 +36,17 @@ updates:
     directories:
       - /backend
       - /frontend
+    labels:
+      - dependencies
     schedule:
       interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
     ignore:
       # Keep the Node and Java runtime image versions pinned until upgraded intentionally.
       - dependency-name: "node"
@@ -33,5 +55,14 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    labels:
+      - dependencies
     schedule:
       interval: weekly
+    groups:
+      minor-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - minor
