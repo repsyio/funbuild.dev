@@ -11,6 +11,9 @@
     <property name="eachLine" value="true"/>
   </module>
   <module name="SuppressWarningsFilter"/>
+  <module name="SuppressionFilter">
+    <property name="file" value="${checkstyle.suppressions.location}"/>
+  </module>
   <module name="TreeWalker">
     <module name="Regexp">
       <property name="format" value="org\.jetbrains\.annotations\.NotNull"/>

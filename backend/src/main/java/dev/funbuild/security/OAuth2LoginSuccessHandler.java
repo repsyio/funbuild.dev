@@ -6,6 +6,7 @@ import dev.funbuild.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -34,14 +35,15 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
     OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
-    OAuth2User oAuth2User = oauthToken.getPrincipal();
+    OAuth2User oAuth2User =
+        Objects.requireNonNull(oauthToken.getPrincipal(), "OAuth2 authentication did not supply a user");
     AuthProvider provider = AuthProvider.valueOf(oauthToken.getAuthorizedClientRegistrationId().toUpperCase());
 
     String providerId =
         provider == AuthProvider.GOOGLE
             ? oAuth2User.getAttribute("sub")
             : String.valueOf(oAuth2User.getAttributes().get("id"));
-    String email = oAuth2User.getAttribute("email");
+    String email = Objects.requireNonNull(oAuth2User.getAttribute("email"), "OAuth2 provider did not supply an email");
     String name = oAuth2User.getAttribute("name");
     String avatarUrl =
         provider == AuthProvider.GOOGLE

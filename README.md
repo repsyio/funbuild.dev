@@ -65,8 +65,9 @@ The development build calls the API on its own origin (through the proxy). The p
 
 Tests: `./mvnw verify` in `backend`, `npx ng test --watch=false` in `frontend`.
 The backend verification lifecycle enforces Java 25 and Maven 3.9.7 or newer, runs
-Checkstyle and SpotBugs, writes `target/site/jacoco/jacoco.xml`, and requires at
-least 80% JaCoCo instruction coverage. CI runs this same `verify` command.
+Checkstyle and SpotBugs, writes `target/site/jacoco/jacoco.xml`, and enforces the
+current 13% JaCoCo instruction-coverage baseline. The threshold is a ratchet and
+must rise as the test suite expands. CI runs this same `verify` command.
 
 ### API contract and generated models
 

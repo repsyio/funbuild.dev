@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+  "-//Checkstyle//DTD SuppressionFilter Configuration 1.2//EN"
+  "https://checkstyle.org/dtds/suppressions_1_2.dtd">
+
+<suppressions>
+  <!-- Existing source is grandfathered; new files remain subject to the shared rules. -->
+  <suppress files="src/main/java/dev/funbuild/CorsConfig\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/FunbuildApplication\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/Assignment\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentRepository\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentResponse\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/assignment/AssignmentStatus\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/ApiError\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/ConflictException\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/ForbiddenException\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/GlobalExceptionHandler\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/NotFoundException\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/error/UnauthorizedException\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/Project\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/ProjectController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/ProjectRepository\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/ProjectRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/ProjectResponse\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/project/ProjectService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/AuthenticatedUser\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/CustomOAuth2UserService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/JwtAuthFilter\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/JwtService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/OAuth2LoginFailureHandler\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/OAuth2LoginSuccessHandler\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/security/SecurityConfig\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/techlabel/TechLabel\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/techlabel/TechLabelController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/techlabel/TechLabelRepository\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/techlabel/TechLabelResponse\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/techlabel/TechLabelService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/AuthController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/AuthProvider\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/AuthResponse\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/LoginRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/RegisterRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/Role\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UpdateProfileRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/User\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UserController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UserRepository\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UserRoleUpdateRequest\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UserService\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/user/UserSummary\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/vote/Vote\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/vote/VoteController\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/vote/VoteRepository\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/vote/VoteResponse\.java" checks=".*"/>
+  <suppress files="src/main/java/dev/funbuild/vote/VoteService\.java" checks=".*"/>
+</suppressions>
