@@ -54,6 +54,6 @@ jobs:
         run: ./mvnw -B -ntp -DskipTests package
 
       - name: Analyze with CodeQL
-        uses: github/codeql-action/analyze@d8073367669608af8fbcc5f63dd0a0d52bb90cff # v4
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
           category: /language:${{ matrix.language }}
