@@ -31,8 +31,6 @@ jobs:
   backend:
     name: Backend tests and coverage
     runs-on: warp-ubuntu-latest-x64-2x
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -58,18 +56,6 @@ jobs:
           path: backend/target/site/jacoco/jacoco.xml
           if-no-files-found: error
 
-      - name: Analyze backend with SonarCloud
-        # Dependabot PRs cannot access repository secrets. Main is analysed after merge.
-        if: github.actor != 'dependabot[bot]' && github.event_name != 'merge_group' && env.SONAR_TOKEN != ''
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-        working-directory: backend
-        run: >-
-          ./mvnw -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=repsyio_funbuild.dev
-          -Dsonar.organization=repsy
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
-
   frontend:
     name: Frontend build and tests
     runs-on: warp-ubuntu-latest-x64-2x
@@ -83,9 +69,63 @@ jobs:
           cache: npm
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Build and test
+      - name: Build and test with coverage
         working-directory: frontend
         run: |
           npm ci
           npm run build
-          npm test -- --watch=false
+          npm run test:coverage
+
+      - name: Normalize LCOV source paths for repository analysis
+        run: sed -i 's|^SF:src/|SF:frontend/src/|' frontend/coverage/frontend/lcov.info
+
+      - name: Upload frontend LCOV report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: frontend-lcov-report
+          path: frontend/coverage/frontend/lcov.info
+          if-no-files-found: error
+
+  sonarcloud:
+    name: SonarCloud analysis
+    needs: [backend, frontend]
+    # Dependabot PRs cannot access repository secrets. Main is analysed after merge.
+    if: github.actor != 'dependabot[bot]' && github.event_name != 'merge_group'
+    runs-on: warp-ubuntu-latest-x64-2x
+    env:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Compile backend classes for analysis
+        working-directory: backend
+        run: ./mvnw -B -ntp test-compile -DskipTests
+
+      - name: Download JaCoCo report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v8
+        with:
+          name: jacoco-report
+          path: backend/target/site/jacoco
+
+      - name: Download frontend LCOV report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v8
+        with:
+          name: frontend-lcov-report
+          path: frontend/coverage/frontend
+
+      - name: Analyze applications with SonarCloud
+        if: env.SONAR_TOKEN != ''
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

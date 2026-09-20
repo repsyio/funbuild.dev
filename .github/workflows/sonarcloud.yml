@@ -30,17 +30,35 @@ jobs:
           cache: maven
           cache-dependency-path: backend/pom.xml
 
-      - name: Build and verify
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build backend and generate JaCoCo coverage
         working-directory: backend
         run: ./mvnw -B -ntp verify
 
-      - name: Analyze backend with SonarCloud
+      - name: Build frontend and generate LCOV coverage
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          npm run test:coverage
+
+      - name: Normalize LCOV source paths for repository analysis
+        run: sed -i 's|^SF:src/|SF:frontend/src/|' frontend/coverage/frontend/lcov.info
+
+      - name: Upload frontend LCOV report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: frontend-lcov-report
+          path: frontend/coverage/frontend/lcov.info
+          if-no-files-found: error
+
+      - name: Analyze applications with SonarCloud
         if: env.SONAR_TOKEN != ''
-        env:
-          SONAR_HOST_URL: https://sonarcloud.io
-        working-directory: backend
-        run: >-
-          ./mvnw -B -ntp org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.projectKey=repsyio_funbuild.dev
-          -Dsonar.organization=repsy
-          -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+        uses: SonarSource/sonarqube-scan-action@fd88b7d7ccbaefd23d8f36f73b59db7a3d246602 # v6.0.0
