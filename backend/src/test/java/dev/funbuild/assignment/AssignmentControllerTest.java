@@ -3,6 +3,7 @@ package dev.funbuild.assignment;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -55,8 +56,9 @@ class AssignmentControllerTest {
 
     mvc.perform(get("/api/assignments").param("status", "active"))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[0].title").value("Mini racing game"))
-        .andExpect(jsonPath("$[0].status").value("ACTIVE"));
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data[0].title").value("Mini racing game"))
+        .andExpect(jsonPath("$.data[0].status").value("ACTIVE"));
   }
 
   @Test
@@ -98,7 +100,16 @@ class AssignmentControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.title").value("Mini racing game"));
+        .andExpect(jsonPath("$.data.title").value("Mini racing game"));
+  }
+
+  @Test
+  void adminCanDeleteAssignment() throws Exception {
+    mvc.perform(
+            delete("/api/assignments/mini-racing-game")
+                .header(HttpHeaders.AUTHORIZATION, bearerFor(ADMIN, ADMIN_ID)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"));
   }
 
   @Test

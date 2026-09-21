@@ -31,7 +31,7 @@ export class Profile {
       },
       error: (err) => {
         this.saving.set(false);
-        this.error.set(err?.error?.message ?? 'Could not update your profile.');
+        this.error.set(err?.error?.text ?? err?.error?.message ?? 'Could not update your profile.');
       },
     });
   }

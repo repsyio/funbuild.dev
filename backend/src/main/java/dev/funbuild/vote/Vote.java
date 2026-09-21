@@ -9,16 +9,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import io.repsy.core.uuidv7.UuidV7;
 import java.time.Instant;
 import java.util.UUID;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "votes")
 public class Vote {
 
   @Id
-  @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+  @UuidV7
   private UUID id;
 
   @ManyToOne(fetch = FetchType.LAZY)

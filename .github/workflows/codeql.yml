@@ -33,6 +33,12 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
+      - name: Initialize repsy-core
+        if: matrix.language == 'java'
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule update --init --recursive
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4
         with:
@@ -51,7 +57,9 @@ jobs:
       - name: Build backend
         if: matrix.language == 'java'
         working-directory: backend
-        run: ./mvnw -B -ntp -DskipTests package
+        run: |
+          ./mvnw -B -ntp -f ../core/pom.xml install -DskipTests -Dcheckstyle.skip=true
+          ./mvnw -B -ntp -DskipTests package
 
       - name: Analyze with CodeQL
         uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd # v4

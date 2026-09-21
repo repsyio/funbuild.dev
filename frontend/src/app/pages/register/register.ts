@@ -25,7 +25,7 @@ export class Register {
       next: () => this.router.navigateByUrl('/'),
       error: (err) => {
         this.loading.set(false);
-        this.error.set(err?.error?.message ?? 'Could not create your account.');
+        this.error.set(err?.error?.text ?? err?.error?.message ?? 'Could not create your account.');
       },
     });
   }

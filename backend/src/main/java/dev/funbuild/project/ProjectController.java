@@ -1,6 +1,8 @@
 package dev.funbuild.project;
 
 import dev.funbuild.security.AuthenticatedUser;
+import io.repsy.core.response.dtos.RestResponse;
+import io.repsy.core.response.services.RestResponseFactory;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ProjectController {
 
   private final ProjectService service;
+  private final RestResponseFactory responses;
 
-  public ProjectController(ProjectService service) {
+  public ProjectController(ProjectService service, RestResponseFactory responses) {
     this.service = service;
+    this.responses = responses;
   }
 
   @GetMapping
@@ -59,8 +63,8 @@ public class ProjectController {
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
+  public RestResponse<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal AuthenticatedUser currentUser) {
     service.delete(id, currentUser);
-    return ResponseEntity.noContent().build();
+    return responses.success("project.deleted");
   }
 }

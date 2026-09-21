@@ -9,5 +9,5 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (!token || !isApiRequest) {
     return next(req);
   }
-  return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }));
+  return next(req.clone({ setHeaders: { Authorization: `Bearer ${token}`, Accept: 'application/json' } }));
 };

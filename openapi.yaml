@@ -1,0 +1,244 @@
+openapi: 3.1.0
+info:
+  title: funbuild API
+  version: 1.0.0
+  description: Programming challenge and project showcase API.
+servers:
+  - url: https://api.funbuild.dev
+paths:
+  /api/auth/register:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthResponse' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+  /api/auth/login:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AuthResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+  /api/assignments:
+    get:
+      responses:
+        '200':
+          description: Assignment list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AssignmentListResponse' }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AssignmentRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/AssignmentResponse' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '403': { $ref: '#/components/responses/ErrorResponse' }
+  /api/projects:
+    get:
+      responses:
+        '200':
+          description: Project list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProjectListResponse' }
+    post:
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProjectRequest' }
+      responses:
+        '200': { $ref: '#/components/responses/ProjectResponse' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '409': { $ref: '#/components/responses/ErrorResponse' }
+  /api/assignments/{slug}:
+    parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+    get:
+      responses: { '200': { $ref: '#/components/responses/AssignmentResponse' }, '404': { $ref: '#/components/responses/ErrorResponse' } }
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/AssignmentRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/AssignmentResponse' }, '400': { $ref: '#/components/responses/ErrorResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { $ref: '#/components/responses/EmptyResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+  /api/projects/top:
+    get:
+      parameters: [{ name: limit, in: query, schema: { type: integer, default: 10, maximum: 50 } }]
+      responses: { '200': { $ref: '#/components/responses/ProjectListResponse' } }
+  /api/projects/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+    get:
+      responses: { '200': { $ref: '#/components/responses/ProjectResponse' }, '404': { $ref: '#/components/responses/ErrorResponse' } }
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { $ref: '#/components/schemas/ProjectRequest' } } } }
+      responses: { '200': { $ref: '#/components/responses/ProjectResponse' }, '400': { $ref: '#/components/responses/ErrorResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { $ref: '#/components/responses/EmptyResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+  /api/projects/{id}/vote:
+    post:
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+      responses: { '200': { $ref: '#/components/responses/GenericResponse' }, '401': { $ref: '#/components/responses/ErrorResponse' } }
+  /api/tech-labels:
+    get:
+      parameters: [{ name: q, in: query, schema: { type: string } }]
+      responses: { '200': { $ref: '#/components/responses/GenericResponse' } }
+  /api/users/me:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { $ref: '#/components/responses/UserResponse' }, '401': { $ref: '#/components/responses/ErrorResponse' } }
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [displayName], properties: { displayName: { type: string } } } } } }
+      responses: { '200': { $ref: '#/components/responses/UserResponse' }, '400': { $ref: '#/components/responses/ErrorResponse' } }
+  /api/users:
+    get:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { $ref: '#/components/responses/GenericResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+  /api/users/{id}:
+    parameters: [{ name: id, in: path, required: true, schema: { type: string, format: uuid } }]
+    put:
+      security: [{ bearerAuth: [] }]
+      requestBody: { required: true, content: { application/json: { schema: { type: object, required: [role], properties: { role: { type: string, enum: [ADMIN, MEMBER] } } } } } }
+      responses: { '200': { $ref: '#/components/responses/UserResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+    delete:
+      security: [{ bearerAuth: [] }]
+      responses: { '200': { $ref: '#/components/responses/EmptyResponse' }, '403': { $ref: '#/components/responses/ErrorResponse' } }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RestResponse:
+      type: object
+      required: [msgId, type]
+      properties:
+        msgId: { type: string }
+        type: { type: string, enum: [SUCCESS, ERROR, WARNING] }
+        data: {}
+        text: { type: string, nullable: true }
+        errorCode: { type: string, format: uuid, nullable: true }
+    UserSummary:
+      type: object
+      required: [id, email, displayName, role, authProvider]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        displayName: { type: string }
+        avatarUrl: { type: string, nullable: true }
+        role: { type: string, enum: [ADMIN, MEMBER] }
+        authProvider: { type: string, enum: [LOCAL, GITHUB, GOOGLE] }
+    AuthResponse:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/RestResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              required: [token, user]
+              properties:
+                token: { type: string }
+                user: { $ref: '#/components/schemas/UserSummary' }
+    RegisterRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+    LoginRequest:
+      $ref: '#/components/schemas/RegisterRequest'
+    AssignmentRequest:
+      type: object
+      required: [title, description, startAt, endAt]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+    Assignment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        slug: { type: string }
+        title: { type: string }
+        description: { type: string }
+        startAt: { type: string, format: date-time }
+        endAt: { type: string, format: date-time }
+        status: { type: string, enum: [UPCOMING, ACTIVE, EXPIRED] }
+        createdBy: { $ref: '#/components/schemas/UserSummary' }
+        createdAt: { type: string, format: date-time }
+    ProjectRequest:
+      type: object
+      required: [assignmentId, title, description, showcaseUrl]
+      properties:
+        assignmentId: { type: string, format: uuid }
+        title: { type: string }
+        description: { type: string }
+        showcaseUrl: { type: string, format: uri }
+        gitRepoUrl: { type: string, format: uri, nullable: true }
+        techLabels: { type: array, items: { type: string } }
+    Project:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        assignmentId: { type: string, format: uuid }
+        assignmentSlug: { type: string }
+        assignmentTitle: { type: string }
+        submitter: { $ref: '#/components/schemas/UserSummary' }
+        title: { type: string }
+        description: { type: string }
+        showcaseUrl: { type: string, format: uri }
+        gitRepoUrl: { type: string, format: uri, nullable: true }
+        techLabels: { type: array, items: { type: object } }
+        voteCount: { type: integer }
+        votedByMe: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    AssignmentListResponse:
+      allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Assignment' } } } }]
+    ProjectListResponse:
+      allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { data: { type: array, items: { $ref: '#/components/schemas/Project' } } } }]
+    Error:
+      allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { type: { const: ERROR }, data: { type: object, additionalProperties: { type: string } } } }]
+  responses:
+    AuthResponse:
+      description: Authentication result
+      content: { application/json: { schema: { $ref: '#/components/schemas/AuthResponse' } } }
+    AssignmentResponse:
+      description: Assignment envelope
+      content: { application/json: { schema: { allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { data: { $ref: '#/components/schemas/Assignment' } } }] } } }
+    ProjectResponse:
+      description: Project envelope
+      content: { application/json: { schema: { allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { data: { $ref: '#/components/schemas/Project' } } }] } } }
+    ErrorResponse:
+      description: Error envelope
+      content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } }
+    GenericResponse:
+      description: Generic success envelope
+      content: { application/json: { schema: { $ref: '#/components/schemas/RestResponse' } } }
+    EmptyResponse:
+      description: Successful operation with no payload
+      content: { application/json: { schema: { $ref: '#/components/schemas/RestResponse' } } }
+    UserResponse:
+      description: User envelope
+      content: { application/json: { schema: { allOf: [{ $ref: '#/components/schemas/RestResponse' }, { type: object, properties: { data: { $ref: '#/components/schemas/UserSummary' } } }] } } }
