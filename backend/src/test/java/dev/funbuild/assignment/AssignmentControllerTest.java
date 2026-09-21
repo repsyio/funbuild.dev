@@ -3,6 +3,7 @@ package dev.funbuild.assignment;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -100,6 +101,15 @@ class AssignmentControllerTest {
                 .content(validRequestJson()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.data.title").value("Mini racing game"));
+  }
+
+  @Test
+  void adminCanDeleteAssignment() throws Exception {
+    mvc.perform(
+            delete("/api/assignments/mini-racing-game")
+                .header(HttpHeaders.AUTHORIZATION, bearerFor(ADMIN, ADMIN_ID)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"));
   }
 
   @Test
