@@ -6,16 +6,16 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import io.repsy.core.uuidv7.UuidV7;
 import java.time.Instant;
 import java.util.UUID;
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "users")
 public class User {
 
   @Id
-  @UuidGenerator(style = UuidGenerator.Style.VERSION_7)
+  @UuidV7
   private UUID id;
 
   @Column(nullable = false, unique = true)

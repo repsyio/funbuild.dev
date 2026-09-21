@@ -90,6 +90,12 @@ Frontend generation is intentionally separate: no generated TypeScript client is
 build stays independent of the backend Maven toolchain. If a typed frontend client is introduced,
 it must be generated from the same OpenAPI document.
 
+The repository also contains the pinned `repsy-core` submodule at `core/`. Initialize it after
+cloning with `git submodule update --init --recursive`; CI and the backend Dockerfile install its
+required Maven modules before building funbuild. The API uses the shared `RestResponse<T>` envelope:
+Angular unwraps successful `data` values at its HTTP boundary, while errors retain `type`, `msgId`,
+`text`, and `errorCode`.
+
 ## Deployment
 
 1. A push to `main` runs `.github/workflows/deploy.yml`. It runs the tests, then builds and pushes `repo.repsy.io/firat/apps/funbuild:sha-<short>` (backend) and `repo.repsy.io/firat/apps/funbuild-frontend:sha-<short>`, both also as `:latest`.

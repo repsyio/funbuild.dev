@@ -36,6 +36,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Initialize repsy-core
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule update --init --recursive
+
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
@@ -46,7 +51,9 @@ jobs:
 
       - name: Build and verify
         working-directory: backend
-        run: ./mvnw -B -ntp verify
+        run: |
+          ./mvnw -B -ntp -f ../core/pom.xml install -DskipTests -Dcheckstyle.skip=true
+          ./mvnw -B -ntp verify
 
       - name: Upload JaCoCo report
         if: always()
@@ -100,6 +107,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Initialize repsy-core
+        run: |
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git submodule update --init --recursive
+
       - name: Set up JDK
         uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6
         with:
@@ -110,7 +122,9 @@ jobs:
 
       - name: Compile backend classes for analysis
         working-directory: backend
-        run: ./mvnw -B -ntp test-compile -DskipTests
+        run: |
+          ./mvnw -B -ntp -f ../core/pom.xml install -DskipTests -Dcheckstyle.skip=true
+          ./mvnw -B -ntp test-compile -DskipTests
 
       - name: Download JaCoCo report
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v8
