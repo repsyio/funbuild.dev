@@ -15,10 +15,13 @@ import dev.funbuild.security.SecurityTestConfig;
 import dev.funbuild.user.AuthProvider;
 import dev.funbuild.user.Role;
 import dev.funbuild.user.User;
+import dev.funbuild.user.UserRepository;
 import dev.funbuild.user.UserService;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -37,10 +40,18 @@ class AssignmentControllerTest {
 
   @MockitoBean private AssignmentService assignmentService;
   @MockitoBean private UserService userService;
+  @MockitoBean private UserRepository userRepository;
 
   private static final User ADMIN = new User("admin@funbuild.dev", null, "Admin", null, Role.ADMIN, AuthProvider.LOCAL, null);
   private static final User MEMBER = new User("member@funbuild.dev", null, "Member", null, Role.MEMBER, AuthProvider.LOCAL, null);
   private static final UUID ADMIN_ID = UUID.randomUUID();
+  private static final UUID MEMBER_ID = UUID.randomUUID();
+
+  @BeforeEach
+  void configureAuthenticatedUsers() {
+    given(userRepository.findById(ADMIN_ID)).willReturn(Optional.of(ADMIN));
+    given(userRepository.findById(MEMBER_ID)).willReturn(Optional.of(MEMBER));
+  }
 
   @Test
   void listsAssignments() throws Exception {
@@ -74,7 +85,7 @@ class AssignmentControllerTest {
   void memberCannotCreateAssignment() throws Exception {
     mvc.perform(
             post("/api/assignments")
-                .header(HttpHeaders.AUTHORIZATION, bearerFor(MEMBER, UUID.randomUUID()))
+                .header(HttpHeaders.AUTHORIZATION, bearerFor(MEMBER, MEMBER_ID))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(validRequestJson()))
         .andExpect(status().isForbidden());

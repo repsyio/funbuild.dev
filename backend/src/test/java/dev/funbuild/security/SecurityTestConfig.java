@@ -1,6 +1,7 @@
 package dev.funbuild.security;
 
 import dev.funbuild.user.UserService;
+import dev.funbuild.user.UserRepository;
 import java.util.List;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,8 +26,11 @@ public class SecurityTestConfig {
   }
 
   @Bean
-  public JwtAuthFilter jwtAuthFilter(JwtService jwtService, SecurityContextRepository securityContextRepository) {
-    return new JwtAuthFilter(jwtService, securityContextRepository);
+  public JwtAuthFilter jwtAuthFilter(
+      JwtService jwtService,
+      UserRepository userRepository,
+      SecurityContextRepository securityContextRepository) {
+    return new JwtAuthFilter(jwtService, userRepository, securityContextRepository);
   }
 
   @Bean
