@@ -11,10 +11,10 @@ export const apiEnvelopeInterceptor: HttpInterceptorFn = (req, next) =>
     map((event) => {
       const response = event instanceof HttpResponse ? event : null;
       const body = response?.body as Partial<ApiEnvelope<unknown>> | null;
-      if (!response || !body || body.type !== 'SUCCESS') {
+      if (body?.type !== 'SUCCESS') {
         return event;
       }
       const envelope = body as ApiEnvelope<unknown>;
-      return response.clone({ body: envelope.data });
+      return response?.clone({ body: envelope.data }) ?? event;
     }),
   );
