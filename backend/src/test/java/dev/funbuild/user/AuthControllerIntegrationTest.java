@@ -49,22 +49,22 @@ class AuthControllerIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(registerRequest("alice@example.com", "correct-horse-battery")))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.token").isString())
-            .andExpect(jsonPath("$.token").isNotEmpty())
-            .andExpect(jsonPath("$.user.id").isString())
-            .andExpect(jsonPath("$.user.id").isNotEmpty())
-            .andExpect(jsonPath("$.user.email").value("alice@example.com"))
-            .andExpect(jsonPath("$.user.displayName").value("alice"))
-            .andExpect(jsonPath("$.user.role").value("MEMBER"))
-            .andExpect(jsonPath("$.user.authProvider").value("LOCAL"))
-            .andExpect(jsonPath("$.user.password").doesNotExist())
-            .andExpect(jsonPath("$.user.passwordHash").doesNotExist())
+            .andExpect(jsonPath("$.data.token").isString())
+            .andExpect(jsonPath("$.data.token").isNotEmpty())
+            .andExpect(jsonPath("$.data.user.id").isString())
+            .andExpect(jsonPath("$.data.user.id").isNotEmpty())
+            .andExpect(jsonPath("$.data.user.email").value("alice@example.com"))
+            .andExpect(jsonPath("$.data.user.displayName").value("alice"))
+            .andExpect(jsonPath("$.data.user.role").value("MEMBER"))
+            .andExpect(jsonPath("$.data.user.authProvider").value("LOCAL"))
+            .andExpect(jsonPath("$.data.user.password").doesNotExist())
+            .andExpect(jsonPath("$.data.user.passwordHash").doesNotExist())
             .andExpect(content().string(not(containsString("correct-horse-battery"))))
             .andReturn()
             .getResponse()
             .getContentAsString();
 
-    String token = JsonPath.read(response, "$.token");
+    String token = JsonPath.read(response, "$.data.token");
     AuthenticatedUser claims = jwtService.parse(token).orElseThrow();
     User persisted = userRepository.findByEmailIgnoreCase("alice@example.com").orElseThrow();
 
@@ -83,7 +83,7 @@ class AuthControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(registerRequest("not-an-email", "correct-horse-battery")))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.email").exists());
+        .andExpect(jsonPath("$.data.email").exists());
   }
 
   @ParameterizedTest
@@ -94,7 +94,7 @@ class AuthControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(request))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.password").exists());
+        .andExpect(jsonPath("$.data.password").exists());
   }
 
   private static Stream<Arguments> invalidPasswordRequests() {
@@ -116,7 +116,7 @@ class AuthControllerIntegrationTest {
 
     mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(request))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.message").value("Email is already registered"));
+        .andExpect(jsonPath("$.text").value("Email is already registered"));
   }
 
   private static String registerRequest(String email, String password) {
