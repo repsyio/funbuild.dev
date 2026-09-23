@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -56,6 +57,12 @@ public class GlobalExceptionHandler {
   public ResponseEntity<RestResponse<Object>> handlePathVariableTypeMismatch(
       MethodArgumentTypeMismatchException ex) {
     return error(HttpStatus.NOT_FOUND, "Resource not found");
+  }
+
+  @ExceptionHandler(HttpMessageNotReadableException.class)
+  public ResponseEntity<RestResponse<Object>> handleUnreadableMessage(
+      HttpMessageNotReadableException ex) {
+    return error(HttpStatus.BAD_REQUEST, "Request body is invalid");
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)

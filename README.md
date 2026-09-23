@@ -35,7 +35,7 @@ kubectl -n funbuild exec -it funbuild-db-1 -- psql funbuild \
   -c "UPDATE users SET role='ADMIN' WHERE email='you@example.com';"
 ```
 
-They need to log in again afterward — the role is baked into the JWT at login time.
+The role is checked from the database on every request, so existing JWTs take effect immediately.
 
 ### GitHub / Google OAuth2 apps
 
