@@ -11,10 +11,15 @@ import dev.funbuild.error.ConflictException;
 import dev.funbuild.security.JwtService;
 import dev.funbuild.security.SecurityConfig;
 import dev.funbuild.security.SecurityTestConfig;
+import dev.funbuild.user.AuthProvider;
 import dev.funbuild.user.Role;
+import dev.funbuild.user.User;
 import dev.funbuild.user.UserService;
+import dev.funbuild.user.UserRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -33,6 +38,16 @@ class ProjectControllerTest {
 
   @MockitoBean private ProjectService projectService;
   @MockitoBean private UserService userService;
+  @MockitoBean private UserRepository userRepository;
+
+  private static final UUID MEMBER_ID = UUID.randomUUID();
+
+  @BeforeEach
+  void configureAuthenticatedUser() {
+    User member =
+        new User("member@funbuild.dev", null, "Member", null, Role.MEMBER, AuthProvider.LOCAL, null);
+    given(userRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+  }
 
   @Test
   void listIsPublic() throws Exception {
@@ -68,7 +83,7 @@ class ProjectControllerTest {
 
   private String bearer() {
     return "Bearer "
-        + jwtService.generateToken(UUID.randomUUID(), "member@funbuild.dev", "Member", Role.MEMBER);
+        + jwtService.generateToken(MEMBER_ID, "member@funbuild.dev", "Member", Role.MEMBER);
   }
 
   private String validRequestJson() {

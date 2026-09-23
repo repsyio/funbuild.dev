@@ -1,5 +1,6 @@
 package dev.funbuild.security;
 
+import dev.funbuild.user.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,10 +19,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class JwtAuthFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
+  private final UserRepository userRepository;
   private final SecurityContextRepository securityContextRepository;
 
-  public JwtAuthFilter(JwtService jwtService, SecurityContextRepository securityContextRepository) {
+  public JwtAuthFilter(
+      JwtService jwtService,
+      UserRepository userRepository,
+      SecurityContextRepository securityContextRepository) {
     this.jwtService = jwtService;
+    this.userRepository = userRepository;
     this.securityContextRepository = securityContextRepository;
   }
 
@@ -34,9 +40,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
       String token = header.substring("Bearer ".length());
       jwtService
           .parse(token)
+          .flatMap(principal -> userRepository.findById(principal.id()))
           .ifPresent(
-              principal -> {
-                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + principal.role()));
+              user -> {
+                AuthenticatedUser principal =
+                    new AuthenticatedUser(
+                        user.getId(), user.getEmail(), user.getDisplayName(), user.getRole());
+                var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
                 var authentication =
                     new UsernamePasswordAuthenticationToken(principal, null, authorities);
                 SecurityContext context = SecurityContextHolder.createEmptyContext();

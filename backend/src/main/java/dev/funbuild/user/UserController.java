@@ -1,8 +1,6 @@
 package dev.funbuild.user;
 
 import dev.funbuild.security.AuthenticatedUser;
-import io.repsy.core.response.dtos.RestResponse;
-import io.repsy.core.response.services.RestResponseFactory;
 import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
@@ -22,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
   private final UserService service;
-  private final RestResponseFactory responses;
 
-  public UserController(UserService service, RestResponseFactory responses) {
+  public UserController(UserService service) {
     this.service = service;
-    this.responses = responses;
   }
 
   @GetMapping("/me")
@@ -55,8 +51,8 @@ public class UserController {
 
   @DeleteMapping("/{id}")
   @PreAuthorize("hasRole('ADMIN')")
-  public RestResponse<Void> delete(@PathVariable UUID id) {
+  public ResponseEntity<Void> delete(@PathVariable UUID id) {
     service.delete(id);
-    return responses.success("user.deleted");
+    return ResponseEntity.noContent().build();
   }
 }
