@@ -31,7 +31,7 @@
 		<maven.min.version>3.9.7</maven.min.version>
 		<!-- Baseline: raise this ratchet as the existing test suite expands. -->
 		<jacoco.minimum.instruction.coverage>0.13</jacoco.minimum.instruction.coverage>
-		<openapi-generator.version>7.18.0</openapi-generator.version>
+		<openapi-generator.version>7.25.0</openapi-generator.version>
 		<checkstyle.config.location>${project.basedir}/config/checkstyle.xml</checkstyle.config.location>
 		<checkstyle.suppressions.location>${project.basedir}/config/checkstyle-suppressions.xml</checkstyle.suppressions.location>
 		<maven-checkstyle-plugin.version>3.6.0</maven-checkstyle-plugin.version>
