@@ -1,6 +1,10 @@
 package dev.funbuild.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -30,6 +34,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -54,6 +60,99 @@ class UserControllerIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TechLabelRepository techLabelRepository;
   @Autowired private VoteRepository voteRepository;
+
+  @Test
+  @Transactional
+  void adminCanListUsersInNewestFirstOrderWithSafeSummaries() throws Exception {
+    userRepository.deleteAll();
+    userRepository.flush();
+
+    User admin =
+        saveUser(
+            "admin-list@example.com",
+            "admin-password-hash-sentinel",
+            "List Admin",
+            "https://example.com/admin-avatar.png",
+            Role.ADMIN,
+            AuthProvider.LOCAL,
+            null,
+            Instant.parse("2020-01-01T00:00:00Z"));
+    User localMember =
+        saveUser(
+            "local-list@example.com",
+            "local-password-hash-sentinel",
+            "Local Member",
+            "https://example.com/local-avatar.png",
+            Role.MEMBER,
+            AuthProvider.LOCAL,
+            null,
+            Instant.parse("2020-01-02T00:00:00Z"));
+    User oauthMember =
+        saveUser(
+            "oauth-list@example.com",
+            null,
+            "OAuth Member",
+            "https://example.com/oauth-avatar.png",
+            Role.MEMBER,
+            AuthProvider.GITHUB,
+            "oauth-provider-id-sentinel",
+            Instant.parse("2020-01-03T00:00:00Z"));
+
+    mvc.perform(
+            get("/api/users")
+                .param("unknown", "ignored")
+                .header(HttpHeaders.AUTHORIZATION, bearer(admin)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data").isArray())
+        .andExpect(jsonPath("$.data[*].id").value(contains(
+            oauthMember.getId().toString(), localMember.getId().toString(), admin.getId().toString())))
+        .andExpect(jsonPath("$.data[*].email").value(contains(
+            oauthMember.getEmail(), localMember.getEmail(), admin.getEmail())))
+        .andExpect(jsonPath("$.data[*].displayName").value(contains(
+            oauthMember.getDisplayName(), localMember.getDisplayName(), admin.getDisplayName())))
+        .andExpect(jsonPath("$.data[*].avatarUrl").value(contains(
+            oauthMember.getAvatarUrl(), localMember.getAvatarUrl(), admin.getAvatarUrl())))
+        .andExpect(jsonPath("$.data[*].role").value(contains("MEMBER", "MEMBER", "ADMIN")))
+        .andExpect(jsonPath("$.data[*].authProvider").value(contains("GITHUB", "LOCAL", "LOCAL")))
+        .andExpect(jsonPath("$.data[0]").value(aMapWithSize(6)))
+        .andExpect(jsonPath("$.data[0].id").value(oauthMember.getId().toString()))
+        .andExpect(jsonPath("$.data[0].email").value(oauthMember.getEmail()))
+        .andExpect(jsonPath("$.data[0].displayName").value(oauthMember.getDisplayName()))
+        .andExpect(jsonPath("$.data[0].avatarUrl").value(oauthMember.getAvatarUrl()))
+        .andExpect(jsonPath("$.data[0].role").value("MEMBER"))
+        .andExpect(jsonPath("$.data[0].authProvider").value("GITHUB"))
+        .andExpect(content().string(not(containsString("passwordHash"))))
+        .andExpect(content().string(not(containsString("providerId"))))
+        .andExpect(content().string(not(containsString("password-hash-sentinel"))))
+        .andExpect(content().string(not(containsString("oauth-provider-id-sentinel"))));
+  }
+
+  @Test
+  @Transactional
+  void listReturnsEmptyResultWhenNoUsersExist() {
+    userRepository.deleteAll();
+    userRepository.flush();
+    assertThat(userRepository.findAllByOrderByCreatedAtDesc()).isEmpty();
+  }
+
+  @Test
+  void memberCannotListUsers() throws Exception {
+    User member = saveUser("member-list@example.com", Role.MEMBER);
+
+    mvc.perform(get("/api/users").header(HttpHeaders.AUTHORIZATION, bearer(member)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void unauthenticatedAndInvalidBearerCannotListUsers() throws Exception {
+    mvc.perform(get("/api/users")).andExpect(status().isUnauthorized());
+
+    mvc.perform(
+            get("/api/users")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer definitely-not-a-valid-token"))
+        .andExpect(status().isUnauthorized());
+  }
 
   @Test
   void adminDeleteReturnsNoContentCascadesOwnedRecordsAndInvalidatesToken() throws Exception {
@@ -283,16 +382,23 @@ class UserControllerIntegrationTest {
   }
 
   private User saveUser(String email, String displayName, String avatarUrl, Role role) {
+    return saveUser(email, null, displayName, avatarUrl, role, AuthProvider.LOCAL, null, Instant.now());
+  }
+
+  private User saveUser(
+      String email,
+      String passwordHash,
+      String displayName,
+      String avatarUrl,
+      Role role,
+      AuthProvider authProvider,
+      String providerId,
+      Instant createdAt) {
+    User user =
+        new User(email, passwordHash, displayName, avatarUrl, role, authProvider, providerId);
+    ReflectionTestUtils.setField(user, "createdAt", createdAt);
     User saved =
-        userRepository.saveAndFlush(
-            new User(
-                email,
-                null,
-                displayName,
-                avatarUrl,
-                role,
-                AuthProvider.LOCAL,
-                null));
+        userRepository.saveAndFlush(user);
     return userRepository.findById(saved.getId()).orElseThrow();
   }
 
