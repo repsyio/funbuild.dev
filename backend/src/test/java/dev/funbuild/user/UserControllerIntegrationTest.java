@@ -16,6 +16,7 @@ import dev.funbuild.assignment.Assignment;
 import dev.funbuild.assignment.AssignmentRepository;
 import dev.funbuild.project.Project;
 import dev.funbuild.project.ProjectRepository;
+import dev.funbuild.security.SecurityTestConfig;
 import dev.funbuild.techlabel.TechLabel;
 import dev.funbuild.techlabel.TechLabelRepository;
 import dev.funbuild.vote.Vote;
@@ -60,6 +61,46 @@ class UserControllerIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TechLabelRepository techLabelRepository;
   @Autowired private VoteRepository voteRepository;
+
+  @Test
+  void authenticatedUserCanGetOwnSummaryWithoutExposingAnotherUsersDataOrSecrets() throws Exception {
+    User owner =
+        saveUser(
+            "me-owner@example.com",
+            "owner-password-hash-sentinel",
+            "Owner Display Name",
+            "https://example.com/owner-avatar.png",
+            Role.MEMBER,
+            AuthProvider.LOCAL,
+            "owner-provider-id-sentinel");
+    User other =
+        saveUser(
+            "me-other@example.com",
+            "other-password-hash-sentinel",
+            "Other Display Name",
+            "https://example.com/other-avatar.png",
+            Role.ADMIN,
+            AuthProvider.GITHUB,
+            "other-provider-id-sentinel");
+
+    mvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, bearer(owner)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data").value(aMapWithSize(6)))
+        .andExpect(jsonPath("$.data.id").value(owner.getId().toString()))
+        .andExpect(jsonPath("$.data.email").value(owner.getEmail()))
+        .andExpect(jsonPath("$.data.displayName").value(owner.getDisplayName()))
+        .andExpect(jsonPath("$.data.avatarUrl").value(owner.getAvatarUrl()))
+        .andExpect(jsonPath("$.data.role").value("MEMBER"))
+        .andExpect(jsonPath("$.data.authProvider").value("LOCAL"))
+        .andExpect(jsonPath("$.data.passwordHash").doesNotExist())
+        .andExpect(jsonPath("$.data.providerId").doesNotExist())
+        .andExpect(content().string(not(containsString(other.getEmail()))))
+        .andExpect(content().string(not(containsString("owner-password-hash-sentinel"))))
+        .andExpect(content().string(not(containsString("owner-provider-id-sentinel"))))
+        .andExpect(content().string(not(containsString("other-password-hash-sentinel"))))
+        .andExpect(content().string(not(containsString("other-provider-id-sentinel"))));
+  }
 
   @Test
   @Transactional
@@ -151,6 +192,35 @@ class UserControllerIntegrationTest {
     mvc.perform(
             get("/api/users")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer definitely-not-a-valid-token"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void unauthenticatedOrInvalidBearerCannotGetCurrentUser() throws Exception {
+    User member = saveUser("me-auth@example.com", Role.MEMBER);
+    JwtService wrongSignatureJwtService =
+        new JwtService("a-completely-different-test-secret-0123456789", 60);
+    JwtService expiredJwtService = new JwtService(SecurityTestConfig.TEST_JWT_SECRET, -1);
+
+    mvc.perform(get("/api/users/me")).andExpect(status().isUnauthorized());
+
+    mvc.perform(
+            get("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer definitely-not-a-valid-token"))
+        .andExpect(status().isUnauthorized());
+
+    mvc.perform(
+            get("/api/users/me")
+                .header(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer " + wrongSignatureJwtService.generateToken(member)))
+        .andExpect(status().isUnauthorized());
+
+    mvc.perform(
+            get("/api/users/me")
+                .header(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer " + expiredJwtService.generateToken(member)))
         .andExpect(status().isUnauthorized());
   }
 
