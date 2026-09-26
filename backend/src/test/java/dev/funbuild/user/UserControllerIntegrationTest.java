@@ -206,6 +206,102 @@ class UserControllerIntegrationTest {
   }
 
   @Test
+  void memberCanUpdateOwnDisplayNameWithoutChangingProtectedFields() throws Exception {
+    User member =
+        saveUser(
+            "profile-update@example.com",
+            "sentinel-password-hash",
+            "Original Display Name",
+            "https://example.com/original-avatar.png",
+            Role.MEMBER,
+            AuthProvider.LOCAL,
+            "sentinel-provider-id-%s".formatted(UUID.randomUUID()));
+    String authorization = bearer(member);
+
+    mvc.perform(
+            put("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, authorization)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    "{\"displayName\":\"Updated Display Name\","
+                        + "\"email\":\"attacker@example.com\","
+                        + "\"passwordHash\":\"changed-password-hash\","
+                        + "\"avatarUrl\":\"https://example.com/changed-avatar.png\","
+                        + "\"role\":\"ADMIN\","
+                        + "\"authProvider\":\"GITHUB\","
+                        + "\"providerId\":\"changed-provider-id\"}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data.id").value(member.getId().toString()))
+        .andExpect(jsonPath("$.data.email").value(member.getEmail()))
+        .andExpect(jsonPath("$.data.displayName").value("Updated Display Name"))
+        .andExpect(jsonPath("$.data.avatarUrl").value(member.getAvatarUrl()))
+        .andExpect(jsonPath("$.data.role").value("MEMBER"))
+        .andExpect(jsonPath("$.data.authProvider").value("LOCAL"))
+        .andExpect(jsonPath("$.data.passwordHash").doesNotExist())
+        .andExpect(jsonPath("$.data.providerId").doesNotExist());
+
+    entityManager.clear();
+    User updated = userRepository.findById(member.getId()).orElseThrow();
+    assertThat(updated.getEmail()).isEqualTo(member.getEmail());
+    assertThat(updated.getPasswordHash()).isEqualTo(member.getPasswordHash());
+    assertThat(updated.getDisplayName()).isEqualTo("Updated Display Name");
+    assertThat(updated.getAvatarUrl()).isEqualTo(member.getAvatarUrl());
+    assertThat(updated.getRole()).isEqualTo(member.getRole());
+    assertThat(updated.getAuthProvider()).isEqualTo(member.getAuthProvider());
+    assertThat(updated.getProviderId()).isEqualTo(member.getProviderId());
+
+    mvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, authorization))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data.displayName").value("Updated Display Name"));
+  }
+
+  @Test
+  void unauthenticatedProfileUpdateIsUnauthorized() throws Exception {
+    mvc.perform(
+            put("/api/users/me")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"displayName\":\"Updated Display Name\"}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidProfileRequests")
+  void invalidProfileRequestReturnsBadRequestAndPreservesDisplayName(String request) throws Exception {
+    User member =
+        saveUser(
+            "profile-invalid-%s@example.com".formatted(UUID.randomUUID()),
+            "sentinel-password-hash",
+            "Original Display Name",
+            "https://example.com/original-avatar.png",
+            Role.MEMBER,
+            AuthProvider.LOCAL,
+            "sentinel-provider-id-%s".formatted(UUID.randomUUID()));
+
+    mvc.perform(
+            put("/api/users/me")
+                .header(HttpHeaders.AUTHORIZATION, bearer(member))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(request))
+        .andExpect(status().isBadRequest());
+
+    entityManager.clear();
+    assertThat(userRepository.findById(member.getId()).orElseThrow().getDisplayName())
+        .isEqualTo("Original Display Name");
+  }
+
+  private static Stream<Arguments> invalidProfileRequests() {
+    return Stream.of(
+        Arguments.of("{}"),
+        Arguments.of("{\"displayName\":null}"),
+        Arguments.of("{\"displayName\":\"\"}"),
+        Arguments.of("{\"displayName\":\"   \"}"),
+        Arguments.of("{\"displayName\":\"%s\"}".formatted("a".repeat(121))),
+        Arguments.of("{\"displayName\":\"unterminated}"));
+  }
+
+  @Test
   void adminCanPromoteAndDemoteUserWithExistingTokenAndOnlyRoleChanges() throws Exception {
     User admin = saveUser("admin-role-update@example.com", Role.ADMIN);
     User target =
@@ -383,6 +479,18 @@ class UserControllerIntegrationTest {
 
   private User saveUser(String email, String displayName, String avatarUrl, Role role) {
     return saveUser(email, null, displayName, avatarUrl, role, AuthProvider.LOCAL, null, Instant.now());
+  }
+
+  private User saveUser(
+      String email,
+      String passwordHash,
+      String displayName,
+      String avatarUrl,
+      Role role,
+      AuthProvider authProvider,
+      String providerId) {
+    return saveUser(
+        email, passwordHash, displayName, avatarUrl, role, authProvider, providerId, Instant.now());
   }
 
   private User saveUser(
