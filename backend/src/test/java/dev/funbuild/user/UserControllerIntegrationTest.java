@@ -488,6 +488,18 @@ class UserControllerIntegrationTest {
       String avatarUrl,
       Role role,
       AuthProvider authProvider,
+      String providerId) {
+    return saveUser(
+        email, passwordHash, displayName, avatarUrl, role, authProvider, providerId, Instant.now());
+  }
+
+  private User saveUser(
+      String email,
+      String passwordHash,
+      String displayName,
+      String avatarUrl,
+      Role role,
+      AuthProvider authProvider,
       String providerId,
       Instant createdAt) {
     User user =
