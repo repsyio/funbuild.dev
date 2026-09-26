@@ -2,10 +2,12 @@ package dev.funbuild.assignment;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -119,8 +121,10 @@ class AssignmentControllerTest {
     mvc.perform(
             delete("/api/assignments/mini-racing-game")
                 .header(HttpHeaders.AUTHORIZATION, bearerFor(ADMIN, ADMIN_ID)))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.type").value("SUCCESS"));
+        .andExpect(status().isNoContent())
+        .andExpect(content().string(""));
+
+    verify(assignmentService).delete("mini-racing-game");
   }
 
   @Test

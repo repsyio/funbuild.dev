@@ -2,8 +2,6 @@ package dev.funbuild.assignment;
 
 import dev.funbuild.security.AuthenticatedUser;
 import dev.funbuild.user.UserService;
-import io.repsy.core.response.dtos.RestResponse;
-import io.repsy.core.response.services.RestResponseFactory;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +23,10 @@ public class AssignmentController {
 
   private final AssignmentService service;
   private final UserService userService;
-  private final RestResponseFactory responses;
 
-  public AssignmentController(AssignmentService service, UserService userService, RestResponseFactory responses) {
+  public AssignmentController(AssignmentService service, UserService userService) {
     this.service = service;
     this.userService = userService;
-    this.responses = responses;
   }
 
   @GetMapping
@@ -58,8 +54,8 @@ public class AssignmentController {
 
   @DeleteMapping("/{slug}")
   @PreAuthorize("hasRole('ADMIN')")
-  public RestResponse<Void> delete(@PathVariable String slug) {
+  public ResponseEntity<Void> delete(@PathVariable String slug) {
     service.delete(slug);
-    return responses.success("assignment.deleted");
+    return ResponseEntity.noContent().build();
   }
 }

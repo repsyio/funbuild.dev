@@ -1,9 +1,13 @@
 package dev.funbuild.project;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,12 +45,12 @@ class ProjectControllerTest {
   @MockitoBean private UserRepository userRepository;
 
   private static final UUID MEMBER_ID = UUID.randomUUID();
+  private static final User MEMBER =
+      new User("member@funbuild.dev", null, "Member", null, Role.MEMBER, AuthProvider.LOCAL, null);
 
   @BeforeEach
   void configureAuthenticatedUser() {
-    User member =
-        new User("member@funbuild.dev", null, "Member", null, Role.MEMBER, AuthProvider.LOCAL, null);
-    given(userRepository.findById(MEMBER_ID)).willReturn(Optional.of(member));
+    given(userRepository.findById(MEMBER_ID)).willReturn(Optional.of(MEMBER));
   }
 
   @Test
@@ -79,6 +83,17 @@ class ProjectControllerTest {
         .andExpect(jsonPath("$.type").value("ERROR"))
         .andExpect(jsonPath("$.text").value("This assignment is no longer accepting submissions"))
         .andExpect(jsonPath("$.errorCode").isNotEmpty());
+  }
+
+  @Test
+  void memberCanDeleteProjectWithNoContentResponse() throws Exception {
+    UUID projectId = UUID.randomUUID();
+
+    mvc.perform(delete("/api/projects/{id}", projectId).header(HttpHeaders.AUTHORIZATION, bearer()))
+        .andExpect(status().isNoContent())
+        .andExpect(content().string(""));
+
+    verify(projectService).delete(eq(projectId), any());
   }
 
   private String bearer() {
