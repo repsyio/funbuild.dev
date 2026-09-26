@@ -27,7 +27,9 @@ public class VoteService {
   @Transactional
   public VoteResponse toggle(UUID projectId, AuthenticatedUser voter) {
     Project project =
-        projectRepository.findById(projectId).orElseThrow(() -> new NotFoundException("Project not found"));
+        projectRepository
+            .findByIdForUpdate(projectId)
+            .orElseThrow(() -> new NotFoundException("Project not found"));
     Optional<Vote> existing = voteRepository.findByProjectIdAndVoterId(projectId, voter.id());
     boolean votedByMe;
     if (existing.isPresent()) {
