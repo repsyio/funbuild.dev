@@ -3,6 +3,7 @@ package dev.funbuild.project;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -23,6 +24,7 @@ import dev.funbuild.user.UserRepository;
 import dev.funbuild.vote.Vote;
 import dev.funbuild.vote.VoteRepository;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -40,6 +42,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -64,6 +67,80 @@ class ProjectControllerIntegrationTest {
   @Autowired private TechLabelRepository techLabelRepository;
   @Autowired private VoteRepository voteRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+
+  @Test
+  void defaultTopRequestReturnsTenRankedProjectsAndViewerVoteFlags() throws Exception {
+    TopProjectsFixture fixture = saveTopProjectsFixture();
+
+    MvcResult result =
+        mvc.perform(
+                get("/api/projects/top")
+                    .header(HttpHeaders.AUTHORIZATION, bearer(fixture.viewer())))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String response = result.getResponse().getContentAsString();
+    List<String> titles = JsonPath.read(response, "$.data[*].title");
+    List<Number> voteCounts = JsonPath.read(response, "$.data[*].voteCount");
+    List<Boolean> votedByMe = JsonPath.read(response, "$.data[*].votedByMe");
+
+    assertThat(titles)
+        .containsExactlyElementsOf(fixture.projects().subList(0, 10).stream().map(Project::getTitle).toList());
+    assertThat(voteCounts).hasSize(10);
+    for (int index = 0; index < voteCounts.size(); index++) {
+      assertThat(voteCounts.get(index).longValue()).isEqualTo(11L - index);
+    }
+    assertThat(votedByMe)
+        .containsExactly(true, false, false, true, false, false, false, false, false, false);
+  }
+
+  @Test
+  void oversizedTopLimitIsCappedAtFifty() throws Exception {
+    clearDatabase();
+    User submitter = saveUser("top-limit-submitter", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter);
+    for (int index = 1; index <= 51; index++) {
+      saveProject(assignment, submitter, "top-limit-%02d".formatted(index));
+    }
+
+    MvcResult cappedResult =
+        mvc.perform(get("/api/projects/top").param("limit", "50"))
+            .andExpect(status().isOk())
+            .andReturn();
+    MvcResult oversizedResult =
+        mvc.perform(get("/api/projects/top").param("limit", "500"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    List<?> cappedData = JsonPath.read(cappedResult.getResponse().getContentAsString(), "$.data");
+    List<?> oversizedData = JsonPath.read(oversizedResult.getResponse().getContentAsString(), "$.data");
+    assertThat(cappedData).hasSize(50);
+    assertThat(oversizedData).isEqualTo(cappedData);
+  }
+
+  @ParameterizedTest
+  @ValueSource(ints = {0, -1})
+  void nonPositiveTopLimitReturnsBadRequest(int limit) throws Exception {
+    mvc.perform(get("/api/projects/top").param("limit", String.valueOf(limit)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void malformedTopLimitDocumentsCurrentResourceNotFoundResponse() throws Exception {
+    mvc.perform(get("/api/projects/top").param("limit", "not-an-integer"))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.text").value("Resource not found"));
+  }
+
+  @Test
+  void emptyDatabaseReturnsPublicEmptyTopProjectData() throws Exception {
+    clearDatabase();
+
+    mvc.perform(get("/api/projects/top"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.data").isArray())
+        .andExpect(jsonPath("$.data.length()").value(0));
+  }
 
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
@@ -622,6 +699,38 @@ class ProjectControllerIntegrationTest {
         projectRepository.count(), techLabelRepository.count(), projectTechLabelCount(), voteRepository.count());
   }
 
+  private TopProjectsFixture saveTopProjectsFixture() {
+    clearDatabase();
+    User submitter = saveUser("top-project-submitter", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter);
+    List<User> voters = new ArrayList<>();
+    for (int index = 0; index < 11; index++) {
+      voters.add(saveUser("top-project-voter-%02d".formatted(index), Role.MEMBER));
+    }
+
+    User viewer = voters.get(0);
+    List<Project> projects = new ArrayList<>();
+    for (int rank = 11; rank >= 1; rank--) {
+      Project project = saveProject(assignment, submitter, "top-project-%02d".formatted(rank));
+      projects.add(project);
+
+      List<User> projectVoters = new ArrayList<>();
+      if (rank == 11 || rank == 8) {
+        projectVoters.add(viewer);
+      }
+      int nextVoter = 1;
+      while (projectVoters.size() < rank) {
+        projectVoters.add(voters.get(nextVoter++));
+      }
+      projectVoters.forEach(voter -> saveVote(project, voter));
+    }
+    return new TopProjectsFixture(viewer, projects);
+  }
+
+  private void clearDatabase() {
+    jdbcTemplate.execute("TRUNCATE TABLE users CASCADE");
+  }
+
   private long projectTechLabelCount() {
     return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM project_tech_labels", Long.class);
   }
@@ -795,4 +904,6 @@ class ProjectControllerIntegrationTest {
       List<String> labels) {}
 
   private record StateCounts(long projects, long labels, long joins, long votes) {}
+
+  private record TopProjectsFixture(User viewer, List<Project> projects) {}
 }
