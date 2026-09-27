@@ -3,11 +3,13 @@ package dev.funbuild.project;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.jayway.jsonpath.JsonPath;
 import dev.funbuild.assignment.Assignment;
 import dev.funbuild.assignment.AssignmentRepository;
 import dev.funbuild.assignment.AssignmentStatus;
@@ -48,6 +50,8 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @Testcontainers
 class ProjectControllerIntegrationTest {
 
+  private static final UUID INVALID_BODY_ASSIGNMENT_ID = UUID.randomUUID();
+
   @Container
   @ServiceConnection
   static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:18");
@@ -60,6 +64,179 @@ class ProjectControllerIntegrationTest {
   @Autowired private TechLabelRepository techLabelRepository;
   @Autowired private VoteRepository voteRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
+
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void authenticatedMemberCanSubmitProjectAndPersistsExpectedGraph(boolean omitGitRepoUrl) throws Exception {
+    User submitter = saveUser("create-submitter", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter, AssignmentStatus.ACTIVE);
+    TechLabel existingLabel = saveLabel("React");
+    String existingLabelName = existingLabel.getName();
+    String newLabelName = "Astro-%s".formatted(UUID.randomUUID().toString().substring(0, 8));
+    long projectsBefore = projectRepository.count();
+    long labelsBefore = techLabelRepository.count();
+    long joinsBefore = projectTechLabelCount();
+    long votesBefore = voteRepository.count();
+
+    String body =
+        projectRequestJson(
+            assignment,
+            "A new project",
+            "A project submitted through the API.",
+            "https://showcase.example.com/project",
+            omitGitRepoUrl ? null : "https://github.com/example/project",
+            List.of("  %s  ".formatted(existingLabelName.toLowerCase()), "  %s  ".formatted(newLabelName)))
+            .replace(
+                omitGitRepoUrl
+                    ? "          \"gitRepoUrl\": null,\n"
+                    : "          \"gitRepoUrl\": \"https://github.com/example/project\",\n",
+                omitGitRepoUrl ? "" : "          \"gitRepoUrl\": \"https://github.com/example/project\",\n");
+
+    ResultActions response = submitProject(submitter, body)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.type").value("SUCCESS"))
+        .andExpect(jsonPath("$.data.id").isNotEmpty())
+        .andExpect(jsonPath("$.data.assignmentId").value(assignment.getId().toString()))
+        .andExpect(jsonPath("$.data.assignmentSlug").value(assignment.getSlug()))
+        .andExpect(jsonPath("$.data.submitter.id").value(submitter.getId().toString()))
+        .andExpect(jsonPath("$.data.title").value("A new project"))
+        .andExpect(jsonPath("$.data.description").value("A project submitted through the API."))
+        .andExpect(jsonPath("$.data.showcaseUrl").value("https://showcase.example.com/project"))
+        .andExpect(jsonPath("$.data.techLabels[*].name").value(containsInAnyOrder(existingLabelName, newLabelName)))
+        .andExpect(jsonPath("$.data.voteCount").value(0))
+        .andExpect(jsonPath("$.data.votedByMe").value(false));
+
+    if (omitGitRepoUrl) {
+      response.andExpect(jsonPath("$.data.gitRepoUrl").doesNotExist());
+    } else {
+      response.andExpect(jsonPath("$.data.gitRepoUrl").value("https://github.com/example/project"));
+    }
+    var result = response.andReturn();
+
+    UUID projectId = UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.data.id"));
+    Project saved = projectRepository.findById(projectId).orElseThrow();
+    assertThat(saved.getAssignment().getId()).isEqualTo(assignment.getId());
+    assertThat(saved.getSubmitter().getId()).isEqualTo(submitter.getId());
+    assertThat(saved.getTitle()).isEqualTo("A new project");
+    assertThat(saved.getDescription()).isEqualTo("A project submitted through the API.");
+    assertThat(saved.getShowcaseUrl()).isEqualTo("https://showcase.example.com/project");
+    assertThat(saved.getGitRepoUrl()).isEqualTo(omitGitRepoUrl ? null : "https://github.com/example/project");
+    assertThat(projectLabelNames(projectId)).containsExactlyInAnyOrder(existingLabelName, newLabelName);
+    assertThat(projectTechLabelIds(projectId)).containsExactlyInAnyOrder(existingLabel.getId(),
+        techLabelRepository.findByNameIgnoreCase(newLabelName).orElseThrow().getId());
+    assertThat(voteRepository.countByProjectId(projectId)).isZero();
+    assertThat(projectRepository.count()).isEqualTo(projectsBefore + 1);
+    assertThat(techLabelRepository.count()).isEqualTo(labelsBefore + 1);
+    assertThat(projectTechLabelCount()).isEqualTo(joinsBefore + 2);
+    assertThat(voteRepository.count()).isEqualTo(votesBefore);
+  }
+
+  @Test
+  void unauthenticatedSubmissionReturnsUnauthorizedAndPreservesState() throws Exception {
+    User creator = saveUser("unauthenticated-create", Role.MEMBER);
+    Assignment assignment = saveAssignment(creator, AssignmentStatus.ACTIVE);
+    StateCounts before = stateCounts();
+
+    mvc.perform(
+            post("/api/projects")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(projectRequestJson(assignment, "Rejected", "No write", "https://example.com", null,
+                    List.of("No write"))))
+        .andExpect(status().isUnauthorized());
+
+    assertThat(stateCounts()).isEqualTo(before);
+  }
+
+  @Test
+  void unknownAssignmentReturnsNotFoundAndPreservesState() throws Exception {
+    User submitter = saveUser("unknown-assignment", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter, AssignmentStatus.ACTIVE);
+    StateCounts before = stateCounts();
+
+    submitProject(
+            submitter,
+            projectRequestJson(
+                UUID.randomUUID(),
+                "Unknown assignment",
+                "No write",
+                "https://example.com",
+                null,
+                List.of("No write")))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.text").value("Assignment not found"));
+
+    assertThat(stateCounts()).isEqualTo(before);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"UPCOMING", "EXPIRED"})
+  void inactiveAssignmentReturnsConflictAndPreservesState(String statusName) throws Exception {
+    User submitter = saveUser("inactive-create", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter, AssignmentStatus.valueOf(statusName));
+    StateCounts before = stateCounts();
+
+    submitProject(
+            submitter,
+            projectRequestJson(
+                assignment,
+                "Inactive assignment",
+                "No write",
+                "https://example.com",
+                null,
+                List.of("No write")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.text").value("This assignment is no longer accepting submissions"));
+
+    assertThat(stateCounts()).isEqualTo(before);
+  }
+
+  @ParameterizedTest
+  @MethodSource("invalidCreateBodies")
+  void invalidSubmissionBodyReturnsBadRequestAndPreservesState(String body) throws Exception {
+    User submitter = saveUser("invalid-create", Role.MEMBER);
+    Assignment assignment = saveAssignment(submitter, AssignmentStatus.ACTIVE);
+    StateCounts before = stateCounts();
+
+    submitProject(submitter, body.replace(INVALID_BODY_ASSIGNMENT_ID.toString(), assignment.getId().toString()))
+        .andExpect(status().isBadRequest());
+
+    assertThat(stateCounts()).isEqualTo(before);
+    assertThat(projectRepository.findAllByAssignmentIdOrderByVoteCountDescCreatedAtDesc(assignment.getId())).isEmpty();
+  }
+
+  private static Stream<String> invalidCreateBodies() {
+    String valid = validCreateRequestJson(INVALID_BODY_ASSIGNMENT_ID);
+    String tooLongTitle = "x".repeat(201);
+    String tooLongShowcaseUrl = "https://example.com/" + "x".repeat(500);
+    String tooLongRepoUrl = "https://github.com/example/" + "x".repeat(500);
+    String tooManyLabels =
+        "[\"label-1\", \"label-2\", \"label-3\", \"label-4\", \"label-5\", \"label-6\", "
+            + "\"label-7\", \"label-8\", \"label-9\", \"label-10\", \"label-11\"]";
+
+    return Stream.of(
+        """
+        {
+          "title": "Valid title",
+          "description": "Description",
+          "showcaseUrl": "https://example.com"
+        }
+        """,
+        valid.replace(INVALID_BODY_ASSIGNMENT_ID.toString(), "not-a-uuid"),
+        valid.replace("\"title\": \"Valid title\",", ""),
+        valid.replace("\"title\": \"Valid title\"", "\"title\": \" \""),
+        valid.replace("\"title\": \"Valid title\"", "\"title\": \"%s\"".formatted(tooLongTitle)),
+        valid.replace("\"description\": \"Description\",", ""),
+        valid.replace("\"description\": \"Description\"", "\"description\": \" \""),
+        valid.replace("\"showcaseUrl\": \"https://example.com\",", ""),
+        valid.replace("\"showcaseUrl\": \"https://example.com\"", "\"showcaseUrl\": \" \""),
+        valid.replace("\"showcaseUrl\": \"https://example.com\"", "\"showcaseUrl\": \"not-a-url\""),
+        valid.replace("\"showcaseUrl\": \"https://example.com\"", "\"showcaseUrl\": \"%s\"".formatted(tooLongShowcaseUrl)),
+        valid.replace("\"gitRepoUrl\": null,", "\"gitRepoUrl\": \"not-a-url\",") ,
+        valid.replace("\"gitRepoUrl\": null,", "\"gitRepoUrl\": \"%s\",".formatted(tooLongRepoUrl)),
+        "{",
+        valid.replace("\"techLabels\": []", "\"techLabels\": %s".formatted(tooManyLabels)),
+        valid.replace("\"techLabels\": []", "\"techLabels\": [\"%s\"]".formatted("x".repeat(41))));
+  }
 
   @Test
   void ownerDeletionReturnsNoContentAndRemovesOnlyProjectOwnedRows() throws Exception {
@@ -395,6 +572,67 @@ class ProjectControllerIntegrationTest {
         assignment.getId(), title, description, showcaseUrl, gitRepoField, labelsJson);
   }
 
+  private String projectRequestJson(
+      UUID assignmentId,
+      String title,
+      String description,
+      String showcaseUrl,
+      String gitRepoUrl,
+      List<String> labels) {
+    String gitRepoField = gitRepoUrl == null ? "null" : "\"%s\"".formatted(gitRepoUrl);
+    String labelsJson =
+        labels.stream()
+            .map(label -> "\"%s\"".formatted(label))
+            .collect(java.util.stream.Collectors.joining(", "));
+    return """
+        {
+          "assignmentId": "%s",
+          "title": "%s",
+          "description": "%s",
+          "showcaseUrl": "%s",
+          "gitRepoUrl": %s,
+          "techLabels": [%s]
+        }
+        """.formatted(assignmentId, title, description, showcaseUrl, gitRepoField, labelsJson);
+  }
+
+  private static String validCreateRequestJson(UUID assignmentId) {
+    return """
+        {
+          "assignmentId": "%s",
+          "title": "Valid title",
+          "description": "Description",
+          "showcaseUrl": "https://example.com",
+          "gitRepoUrl": null,
+          "techLabels": []
+        }
+        """.formatted(assignmentId);
+  }
+
+  private ResultActions submitProject(User user, String body) throws Exception {
+    return mvc.perform(
+        post("/api/projects")
+            .header(HttpHeaders.AUTHORIZATION, bearer(user))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(body));
+  }
+
+  private StateCounts stateCounts() {
+    return new StateCounts(
+        projectRepository.count(), techLabelRepository.count(), projectTechLabelCount(), voteRepository.count());
+  }
+
+  private long projectTechLabelCount() {
+    return jdbcTemplate.queryForObject("SELECT COUNT(*) FROM project_tech_labels", Long.class);
+  }
+
+  private List<UUID> projectTechLabelIds(UUID projectId) {
+    return jdbcTemplate.queryForList(
+        "SELECT tech_label_id FROM project_tech_labels WHERE project_id = ? ORDER BY tech_label_id",
+        UUID.class,
+        projectId);
+  }
+
   private ProjectState projectState(Project project) {
     Project current = projectRepository.findById(project.getId()).orElseThrow();
     return new ProjectState(
@@ -555,4 +793,6 @@ class ProjectControllerIntegrationTest {
       UUID assignmentId,
       UUID submitterId,
       List<String> labels) {}
+
+  private record StateCounts(long projects, long labels, long joins, long votes) {}
 }
