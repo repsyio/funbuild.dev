@@ -16,7 +16,7 @@ concurrency:
 jobs:
   editorconfig:
     name: EditorConfig
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-sm
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -30,7 +30,7 @@ jobs:
 
   backend:
     name: Backend tests and coverage
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
@@ -65,7 +65,7 @@ jobs:
 
   frontend:
     name: Frontend build and tests
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
@@ -99,7 +99,7 @@ jobs:
     needs: [backend, frontend]
     # Dependabot PRs cannot access repository secrets. Main is analysed after merge.
     if: github.actor != 'dependabot[bot]' && github.event_name != 'merge_group'
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:
