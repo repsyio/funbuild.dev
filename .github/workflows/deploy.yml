@@ -21,7 +21,7 @@ env:
 
 jobs:
   test:
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     steps:
       - uses: actions/checkout@v7
 
@@ -58,7 +58,7 @@ jobs:
   image:
     needs: test
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     outputs:
       tag: ${{ steps.tag.outputs.tag }}
     steps:
@@ -108,7 +108,7 @@ jobs:
 
   deploy:
     needs: image
-    runs-on: warp-ubuntu-latest-x64-2x
+    runs-on: repsy-md
     permissions:
       contents: write
     steps:
