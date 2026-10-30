@@ -14,7 +14,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze main branch
-    runs-on: repsy-md
+    runs-on: ubicloud-standard-4
     env:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     steps:

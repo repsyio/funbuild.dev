@@ -11,7 +11,7 @@ permissions:
 jobs:
   enable-automerge:
     if: github.event.pull_request.user.login == 'dependabot[bot]'
-    runs-on: repsy-sm
+    runs-on: ubicloud-standard-2
     steps:
       - name: Verify pull request author
         id: verify-author

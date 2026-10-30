@@ -19,7 +19,7 @@ concurrency:
 jobs:
   analyze:
     name: Analyze (${{ matrix.name }})
-    runs-on: repsy-md
+    runs-on: ubicloud-standard-4
     strategy:
       fail-fast: false
       matrix:
