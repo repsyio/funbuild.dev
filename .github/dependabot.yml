@@ -6,6 +6,8 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+      time: '01:30'
+      timezone: 'Europe/Amsterdam'
     groups:
       minor-updates:
         applies-to: version-updates
@@ -20,6 +22,8 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+      time: '01:30'
+      timezone: 'Europe/Amsterdam'
     groups:
       minor-updates:
         applies-to: version-updates
@@ -40,6 +44,8 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+      time: '01:30'
+      timezone: 'Europe/Amsterdam'
     groups:
       minor-updates:
         applies-to: version-updates
@@ -59,6 +65,8 @@ updates:
       - dependencies
     schedule:
       interval: weekly
+      time: '01:30'
+      timezone: 'Europe/Amsterdam'
     groups:
       minor-updates:
         applies-to: version-updates
